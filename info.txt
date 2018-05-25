@@ -1,0 +1,10 @@
+wallet - lottery
+PW5JCoiwvnkr1PuZVBiaq8eYAw2TtmhtSFKyjxDizx9vKrDzHxyXR
+
+owner key
+Private key: 5J4RemYPpfKg3vUJDTNVNEEudJTEyK9jaHWcMigA6Hq82X5QjWv
+Public key: EOS7dcvn31kx6XNM8Etm2ZEADGhceNtdypk5TXequ6S6C8ezMqZhR
+
+active key
+Private key: 5HzMHNo92XxE9vHbZ9EeVuXRwosUWGLHXvM1FkdBSiUPT2i9J9E
+Public key: EOS8YU5u7tZhk3jhgYPKK8Sr2GQpLQphk5pmS4zwyNwnZV5ZhLCjh

@@ -1,0 +1,1 @@
+cleos wallet unlock -n lottery --password PW5JCoiwvnkr1PuZVBiaq8eYAw2TtmhtSFKyjxDizx9vKrDzHxyXR
