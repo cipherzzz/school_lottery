@@ -15,9 +15,16 @@ namespace CipherZ {
             //@abi action
             void addstudent(const account_name account, uint64_t ssn, string firstname, string lastname, uint64_t grade) {
             require_auth(account);
+            
+            // Grade logic
+            gradeIndex grades(_self, _self);
+            auto grade_iter = grades.find(grade);
+            eosio_assert(grade_iter != grades.end(), "Grade must exist before adding a student");
+
+            // Student insertion
             studentMultiIndex students(_self, _self);
-            auto iterator = students.find(ssn);
-            eosio_assert(iterator == students.end(), "student already exists");
+            auto student_iter = students.find(ssn);
+            eosio_assert(student_iter == students.end(), "student already exists");
             students.emplace(account, [&](auto& student) {
                 student.account_name = account;
                 student.ssn = ssn;
@@ -25,6 +32,11 @@ namespace CipherZ {
                 student.lastname = lastname;
                 student.grade = grade;
             });
+
+            grades.modify(grade_iter, account, [&](auto& grade) {
+                grade.applicants = grade.applicants + 1;
+            });
+
             }
 
             //@abi action
@@ -61,7 +73,8 @@ namespace CipherZ {
                 eosio_assert(iterator != grades.end(), "grade does not exist");
                 auto current_grade = (*iterator);
                 print(" **Grade: ", current_grade.grade_num, 
-                        " Openings: ", current_grade.openings, "** ");
+                        " Openings: ", current_grade.openings,
+                        " Applicants: ", current_grade.applicants, "** ");
             }
 
             //@abi action
@@ -90,7 +103,8 @@ namespace CipherZ {
                 while (iterator != grades.end()) {
                     auto current_grade = (*iterator);
                     print(" **Grade: ", current_grade.grade_num, 
-                        " Openings: ", current_grade.openings, "** ");
+                        " Openings: ", current_grade.openings,
+                        " Applicants: ", current_grade.applicants, "** ");
                     iterator++;
                 }
             }
@@ -99,42 +113,25 @@ namespace CipherZ {
             void runlottery(account_name account) {
                 require_auth(account);
                 studentMultiIndex students(_self, _self);
-                //auto grade_index = students.template get_index<N(bygrade)>();
-                uint64_t current_grade = 0;
-                while(current_grade <= 12) {
-                auto iterator = students.begin();
-                while (iterator != students.end()) {
-                    auto current_student = (*iterator);
-                    if(current_student.grade == current_grade) {
-                        students.modify(iterator, account, [&](auto& student) {
-                        print(" **SSN: ", student.ssn, 
-                        " First Name: ", student.firstname.c_str(), 
-                        " Last Name: ", student.lastname.c_str(),
-                        " Grade: ", student.grade,
-                        " Result: ", student.result, "** ");
-                        student.result = 200;
-                    });
-                    } else {
-                        print("Students not in grade: ", current_grade);
+                auto student_index = students.template get_index<N(bygrade)>();
+                gradeIndex grades(_self, _self);
+                auto grade_iter = grades.begin();
+                while(grade_iter != grades.end()) {
+                    auto current_grade = (*grade_iter).grade_num;
+                    auto student_iter = student_index.find(current_grade);
+                    uint64_t result_index = 1;
+                    while (student_iter != student_index.end()) {
+                        auto current_student = (*student_iter);
+                        if(current_student.grade == current_grade) {
+                            student_index.modify(student_iter, account, [&](auto& student) {
+                            student.result = result_index;
+                        });
+                        result_index++;
+                        } 
+                       student_iter++;
                     }
-                    iterator++;
+                 grade_iter++;
                 }
-                 current_grade++;
-                }
-
-                // studentIndex students(_self, _self);
-                // auto iterator = students.begin();
-                // while (iterator != students.end()) {
-                //     students.modify(iterator, account, [&](auto& student) {
-                //     print("Username: ", student.ssn, 
-                //     " First Name: ", student.firstname.c_str(), 
-                //     " Last Name: ", student.lastname.c_str(),
-                //     " Grade: ", student.grade,
-                //     " Result: ", student.result);
-                //     student.result = 200;
-                // });
-                //     iterator++;
-                // }
             }
 
 
@@ -152,7 +149,7 @@ namespace CipherZ {
                 uint64_t primary_key() const { return ssn; }
                 uint64_t secondary_key() const { return grade; }
 
-                EOSLIB_SERIALIZE(student, (account_name)(ssn)(firstname)(lastname)(grade)(result))
+                EOSLIB_SERIALIZE(student, (account_name)(ssn)(firstname)(lastname)(grade)(result));
             };
 
             typedef multi_index<N(student), student, indexed_by<N(bygrade), const_mem_fun<student, uint64_t, &student::secondary_key>>> studentMultiIndex;
@@ -162,10 +159,11 @@ namespace CipherZ {
                 uint64_t account_name;
                 uint64_t grade_num;
                 uint64_t openings;
+                uint64_t applicants;
 
                 uint64_t primary_key() const { return grade_num; }
 
-                EOSLIB_SERIALIZE(grade, (account_name)(grade_num)(openings))
+                EOSLIB_SERIALIZE(grade, (account_name)(grade_num)(openings)(applicants))
             };
 
             //typedef multi_index<N(student), student> studentIndex;
