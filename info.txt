@@ -1,6 +1,9 @@
 wallet - lottery
 PW5JCoiwvnkr1PuZVBiaq8eYAw2TtmhtSFKyjxDizx9vKrDzHxyXR
 
+cleos wallet create -n lottery
+
+-- lottery.code (This is the smart contract account)
 owner key
 Private key: 5J4RemYPpfKg3vUJDTNVNEEudJTEyK9jaHWcMigA6Hq82X5QjWv
 Public key: EOS7dcvn31kx6XNM8Etm2ZEADGhceNtdypk5TXequ6S6C8ezMqZhR
@@ -9,6 +12,88 @@ active key
 Private key: 5HzMHNo92XxE9vHbZ9EeVuXRwosUWGLHXvM1FkdBSiUPT2i9J9E
 Public key: EOS8YU5u7tZhk3jhgYPKK8Sr2GQpLQphk5pmS4zwyNwnZV5ZhLCjh
 
+cleos create account eosio lottery.code EOS7dcvn31kx6XNM8Etm2ZEADGhceNtdypk5TXequ6S6C8ezMqZhR EOS8YU5u7tZhk3jhgYPKK8Sr2GQpLQphk5pmS4zwyNwnZV5ZhLCjh
 
-cleos wallet create -n lottery
-cleos create account eosio supervisor EOS7dcvn31kx6XNM8Etm2ZEADGhceNtdypk5TXequ6S6C8ezMqZhR EOS8YU5u7tZhk3jhgYPKK8Sr2GQpLQphk5pmS4zwyNwnZV5ZhLCjh
+-- admin (This is the admin of the lotter)
+owner key
+Private key: 5KCR2hrHYmE3TRzKkfasZhsQJoVNxTmMgNVsDXGwcymvCPEFNyM
+Public key: EOS7vy6v3Z1aNvZ8SZaAEUF7ywyQUmF4qQUnDh2JSv7QTid9ty3v2
+
+active key
+Private key: 5KDMeU7WZKfgR58xs5yq5j7ujrPyr5qsJvmBpZiv71a5Znuwwdf
+Public key: EOS5UaD3vwKVVtB8bhFBVpCRprZRR5EHtgGmLB9XWzmMnK48odgXM
+
+cleos create account eosio admin EOS7vy6v3Z1aNvZ8SZaAEUF7ywyQUmF4qQUnDh2JSv7QTid9ty3v2 EOS5UaD3vwKVVtB8bhFBVpCRprZRR5EHtgGmLB9XWzmMnK48odgXM
+
+-- parent (This is the parent account)
+owner key
+Private key: 5JbAcWZBNr3Jo5mfDB5JRbzCrNx8CkW7FrBb8qQZgtv3CvQwiVq
+Public key: EOS4uycimfHm5RAojQwBvjPFUtCsgDKBPLoyReGjB661uT7Y61LQq
+
+active key
+Private key: 5JQJzCcY7Y3Pu789xJmSZeorkJKAuvfZPUHXkJmgAjUH8UxEfhx
+Public key: EOS8da5sc5Z2gwsexe6Z22ZH5czGu7hkqAjboCfAbaxMDYbMpLmis
+
+cleos create account eosio parent EOS4uycimfHm5RAojQwBvjPFUtCsgDKBPLoyReGjB661uT7Y61LQq EOS8da5sc5Z2gwsexe6Z22ZH5czGu7hkqAjboCfAbaxMDYbMpLmis
+
+-- Tests --
+
+cleos push action lottery.code remgrade '["admin",1]' -p admin@active 
+// Error - Grade does not Exist
+
+cleos push action lottery.code addstudent '["parent",123456789, "jimmy", "stewart", 1]' -p parent@active
+// Error - Student's grade must exist before adding student
+
+cleos push action lottery.code addgrade '["admin",1, 30]' -p admin@active 
+// Success
+
+cleos push action lottery.code remstudent '["parent",123456789]' -p parent@active 
+// Error - Student does not Exist
+
+cleos push action lottery.code addstudent '["parent",123456789, "jimmy", "stewart", 1]' -p parent@active
+// Success
+
+cleos push action lottery.code remstudent '["admin",123456789]' -p admin@active 
+// Error - Student is only accessible from the account that inserted it
+
+cleos push action lottery.code getstudent '["admin",123456789]' -p admin@active
+// Error - Student is only accessible from the account that inserted it
+
+cleos push action lottery.code getstudent '["parent",123456789]' -p parent@active
+// Success
+
+cleos push action lottery.code getstudents '["parent"]' -p parent@active
+// Success - available to all authorized - strips out private info - Todo lock this down
+
+cleos push action lottery.code getstudents '["admin"]' -p admin@active
+// Success - available to all authorized - strips out private info - Todo lock this down
+
+cleos push action lottery.code getgrade '["parent",1]' -p parent@active
+// Success - available to all authorized
+
+cleos push action lottery.code getgrade '["admin", 1]' -p admin@active
+// Success - available to all authorized
+
+cleos push action lottery.code getgrades '["parent"]' -p parent@active
+// Success - available to all authorized
+
+cleos push action lottery.code getgrades '["admin"]' -p admin@active
+// Success - available to all authorized
+
+cleos push action lottery.code runlottery '["admin"]' -p admin@active
+// Success - available to all authorized - Todo lock this down
+
+cleos push action lottery.code getstudent '["parent",123456789]' -p parent@active
+// Success - Using FIFO in lieue of random sample - todo use dice example contract for random behaviour
+
+cleos push action lottery.code remstudent '["parent",123456789]' -p parent@active 
+// Success
+
+cleos push action lottery.code remgrade '["admin",1]' -p admin@active 
+//Success
+
+cleos push action lottery.code getstudent '["parent",123456789]' -p parent@active
+// Error - student not found
+
+cleos push action lottery.code getgrade '["admin", 1]' -p admin@active
+// Error - grade not found

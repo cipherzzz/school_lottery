@@ -1,1 +1,1 @@
-cleos set contract supervisor ./contracts/lottery ./contracts/lottery/Lottery.wast ./contracts/lottery/Lottery.abi
+cleos set contract lottery.code ./contracts/lottery ./contracts/lottery/Lottery.wast ./contracts/lottery/Lottery.abi

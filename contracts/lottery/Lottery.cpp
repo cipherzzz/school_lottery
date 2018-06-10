@@ -25,6 +25,12 @@ namespace CipherZ {
             studentMultiIndex students(_self, _self);
             auto student_iter = students.find(ssn);
             eosio_assert(student_iter == students.end(), "student already exists");
+            
+            auto parent_index = students.template get_index<N(byparent)>();
+            auto parent_iter = parent_index.find(account);
+            eosio_assert(parent_iter == parent_index.end(), "A student has already been entered by this parent");
+
+
             students.emplace(account, [&](auto& student) {
                 student.account_name = account;
                 student.ssn = ssn;
@@ -53,16 +59,40 @@ namespace CipherZ {
             }
 
             //@abi action
-            void getstudent(const uint64_t ssn) {
+            void getstudent(const account_name account, const uint64_t ssn) {
+                require_auth(account);
                 studentMultiIndex students(_self, _self);
                 auto iterator = students.find(ssn);
                 eosio_assert(iterator != students.end(), "student not found");
                 auto student = students.get(ssn);
+                eosio_assert(student.account_name == account, "only parent can view student");
                 print(" **SSN: ", student.ssn, 
-                        " First Name: ", student.firstname.c_str(), 
-                        " Last Name: ", student.lastname.c_str(),
-                        " Grade: ", student.grade,
-                        " Result: ", student.result, "** ");
+                    " First Name: ", student.firstname.c_str(), 
+                    " Last Name: ", student.lastname.c_str(),
+                    " Grade: ", student.grade,
+                    " Result: ", student.result, "** ");
+            }
+
+            //@abi action
+            void remstudent(const account_name account, const uint64_t ssn) {
+                require_auth(account);
+                studentMultiIndex students(_self, _self);
+                auto iterator = students.find(ssn);
+                eosio_assert(iterator != students.end(), "student not found");
+                auto student = (*iterator);
+                eosio_assert(student.account_name == account, "only parent can remove student");
+                students.erase(iterator);
+            }
+
+            //@abi action
+            void remgrade(const account_name account, const uint64_t grade_num) {
+                require_auth(account);
+                gradeIndex grades(_self, _self);
+                auto iterator = grades.find(grade_num);
+                eosio_assert(iterator != grades.end(), "grade not found");
+                auto grade = (*iterator);
+                eosio_assert(grade.account_name == account, "only supervisor can remove grade");
+                grades.erase(iterator);
             }
 
             //@abi action
@@ -72,7 +102,8 @@ namespace CipherZ {
                 auto iterator = grades.find(grade_num);
                 eosio_assert(iterator != grades.end(), "grade does not exist");
                 auto current_grade = (*iterator);
-                print(" **Grade: ", current_grade.grade_num, 
+                print(" **Grade: ", current_grade.grade_num,
+                        " Account: ", current_grade.account_name, 
                         " Openings: ", current_grade.openings,
                         " Applicants: ", current_grade.applicants, "** ");
             }
@@ -85,8 +116,7 @@ namespace CipherZ {
                 eosio_assert(iterator != students.end(), "no students exists");
                 while (iterator != students.end()) {
                     auto student = (*iterator);
-                    print(" **SSN: ", student.ssn, 
-                        " First Name: ", student.firstname.c_str(), 
+                    print(" First Name: ", student.firstname.c_str(), 
                         " Last Name: ", student.lastname.c_str(),
                         " Grade: ", student.grade,
                         " Result: ", student.result, "** ");
@@ -147,12 +177,15 @@ namespace CipherZ {
                 uint64_t result;
 
                 uint64_t primary_key() const { return ssn; }
-                uint64_t secondary_key() const { return grade; }
+                uint64_t grade_key() const { return grade; }
+                uint64_t parent_key() const { return account_name; }
 
                 EOSLIB_SERIALIZE(student, (account_name)(ssn)(firstname)(lastname)(grade)(result));
             };
 
-            typedef multi_index<N(student), student, indexed_by<N(bygrade), const_mem_fun<student, uint64_t, &student::secondary_key>>> studentMultiIndex;
+            typedef multi_index<N(student), student, 
+            indexed_by<N(bygrade), const_mem_fun<student, uint64_t, &student::grade_key>>,
+            indexed_by<N(byparent), const_mem_fun<student, uint64_t, &student::parent_key>>> studentMultiIndex;
     
             //@abi table grade i64
             struct grade {
@@ -170,5 +203,5 @@ namespace CipherZ {
             typedef multi_index<N(grade), grade> gradeIndex;
     };
 
-    EOSIO_ABI(Lottery, (addstudent)(addgrade)(getstudents)(getgrades)(getstudent)(getgrade)(runlottery))
+    EOSIO_ABI(Lottery, (addstudent)(addgrade)(getstudents)(getgrades)(getstudent)(getgrade)(runlottery)(remstudent)(remgrade))
 }

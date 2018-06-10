@@ -1,0 +1,22 @@
+{
+  "name": "lottery",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lottery.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cipherzzz/school_lottery.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cipherzzz/school_lottery/issues"
+  },
+  "homepage": "https://github.com/cipherzzz/school_lottery#readme",
+  "dependencies": {
+    "eosjs": "^14.1.0"
+  }
+}

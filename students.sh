@@ -9,3 +9,5 @@ cleos push action supervisor addstudent '["supervisor",222334446, "poca", "honta
 cleos push action supervisor addstudent '["supervisor",222334448, "mo", "money", 1]' -p supervisor@active
 cleos push action supervisor addstudent '["supervisor",222334452, "h", "h", 2]' -p supervisor@active
 
+cleos push action parent addstudent '["parent",222334448, "mo", "money", 1]' -p parent@active
+cleos push action parent addstudent '["parent",222334449, "mo", "money", 1]' -p parent@active

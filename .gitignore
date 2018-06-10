@@ -1,0 +1,4 @@
+contracts/Lottery.abi
+contracts/Lottery.wasm
+contracts/Lottery.wast
+node_modules
