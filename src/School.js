@@ -27,6 +27,7 @@ export default class School extends Component {
 
         return (
             <div>
+            <h2>School</h2>    
             <h4>{this.props.name}</h4>    
             <table className="pure-table pure-table-horizontal">
             <thead>

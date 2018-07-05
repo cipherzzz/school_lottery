@@ -31,6 +31,7 @@ class App extends Component {
       scatter: null,
       eos: null,
       account: null,
+      identity: null,
       grades: [],
       error: null,
       userType: -1 //-1 is unauthorized, 0 is superintendant, 1 is parent
@@ -78,8 +79,17 @@ class App extends Component {
   }
 
   loadScatterIdentity(isParent) {
-    this.state.scatter.getIdentity({accounts:[network]}).then(identity => {
+    
+    const requiredFields = {
+      personal:['firstname', 'lastname'],
+      location:['address', 'city', 'state', 'zipcode', 'phone'],
+      accounts:[network]
+    };
+
+    this.state.scatter.getIdentity(requiredFields).then(identity => {
       console.log(identity, "identityFound")
+      this.setState({identity})
+
       const account = identity.accounts.find(acc=>acc.blockchain==='eos'); 
 
       if(account) {
@@ -121,7 +131,7 @@ class App extends Component {
 
   renderUserView() {
     if(this.state.userType === 1) {
-      return <Parent eos={this.state.eos} account={this.state.account}/>
+      return <Parent eos={this.state.eos} account={this.state.account} identity={this.state.identity}/>
     } else if(this.state.userType === 0) {
       return <Superintendent />
     } else {

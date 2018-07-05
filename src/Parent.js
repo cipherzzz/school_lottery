@@ -79,7 +79,31 @@ export default class Parent extends Component {
     render() {
 
         return (
-        <div>
+        <div>    
+        <h2>Parent</h2>
+        <table className="pure-table pure-table-horizontal">
+            <thead>
+                <tr>
+                    <th>First</th>
+                    <th>Last</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                    <th>Zip</th>
+                </tr>
+            </thead>
+        
+            <tbody>
+                <tr>
+                    <td>{this.props.identity.personal.firstname}</td>
+                    <td>{this.props.identity.personal.lastname}</td>
+                    <td>{this.props.identity.location.address}</td>
+                    <td>{this.props.identity.location.city}</td>
+                    <td>{this.props.identity.location.state}</td>
+                    <td>{this.props.identity.location.zipcode}</td>
+                </tr>
+            </tbody>
+        </table>                 
         <h2>Add/Edit Child</h2>
         <p>Enter your child's information</p>
         <div className="pure-form pure-form-aligned">
