@@ -1,4 +1,5 @@
-contracts/Lottery.abi
-contracts/Lottery.wasm
-contracts/Lottery.wast
+eos/contracts/lottery/Lottery.abi
+eos/contracts/lottery/Lottery.wasm
+eos/contracts/lottery/Lottery.wast
 node_modules
+build_webpack
