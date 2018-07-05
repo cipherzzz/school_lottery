@@ -1,10 +1,13 @@
 {
   "name": "lottery",
   "version": "1.0.0",
-  "description": "",
-  "main": "lottery.js",
+  "description": "school lottery demo",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --mode production",
+    "dev": "webpack --mode development",
+    "watch": "webpack --mode development --watch",
+    "start": "webpack-dev-server --mode development --watch"
   },
   "repository": {
     "type": "git",
@@ -16,6 +19,11 @@
     "url": "https://github.com/cipherzzz/school_lottery/issues"
   },
   "homepage": "https://github.com/cipherzzz/school_lottery#readme",
+  "devDependencies": {
+    "webpack": "^4.6.0",
+    "webpack-cli": "^2.0.15",
+    "webpack-dev-server": "^3.1.3"
+  },
   "dependencies": {
     "eosjs": "^14.1.0"
   }

@@ -5,48 +5,86 @@ var Eos = require('eosjs') // Eos = require('./src')
 //     })
 
 
-Eos = require('eosjs') // Eos = require('./src')
+Eos = require('eosjs') 
 
 eos = Eos({
-    keyProvider:['5JbAcWZBNr3Jo5mfDB5JRbzCrNx8CkW7FrBb8qQZgtv3CvQwiVq','5JQJzCcY7Y3Pu789xJmSZeorkJKAuvfZPUHXkJmgAjUH8UxEfhx'],
+    keyProvider:[
+        '5HzMHNo92XxE9vHbZ9EeVuXRwosUWGLHXvM1FkdBSiUPT2i9J9E',
+        "5KDMeU7WZKfgR58xs5yq5j7ujrPyr5qsJvmBpZiv71a5Znuwwdf",
+        "5JQJzCcY7Y3Pu789xJmSZeorkJKAuvfZPUHXkJmgAjUH8UxEfhx"
+        ],
     httpEndpoint:'http://127.0.0.1:8888'
-    })  
+    }) 
+
+eos.contract('lottery.code').then(contract => {
+    const options = { authorization: [ `parent@active` ] };
+    contract.getgrades(`parent`, options)
+}).catch(error => console.log(error));    
+
+// eos.transaction({
+//     actions: [
+//       {
+//         account: 'test.code',
+//         name: 'testaction',
+//         authorization: [{
+//           actor: 'test.code',
+//           permission: 'active'
+//         }],
+//         data: {
+//           account: 'test.code',
+//         }
+//       }
+//     ]
+//   }).then((result)=>{console.log(result)})     
 
 //   const options = {
+//     account: "test.code",  
 //     broadcast: true,
 //     sign: true,
 //     scope: [
-//       "parent"
+//       "test.code"
 //     ],
 //     authorization: [{
-//       "account": "parent",
+//       "actor": "test.code",
 //       "permission": "active"
 //     }]
 //   }
 
 //     eos
-//     .contract('lottery.code')
+//     .contract('test.code')
 //     .then((lottery) => {
-//       lottery.getstudents({"account": "parent"})
+//       lottery.testaction({"account": "test.code"})
 //     })
 
 
-eos.transaction({
-    actions: [
-      {
-        account: 'lottery.code',
-        name: 'getstudents',
-        authorization: [{
-          actor: 'parent',
-          permission: 'active'
-        }],
-        data: {
-          account: 'parent',
-        }
-      }
-    ]
-  }).then((result)=>{console.log(result)})
+// eos.transaction({
+//     actions: [
+//       {
+//         account: 'admin',
+//         name: 'getstudents',
+//         authorization: [{
+//           actor: 'parent',
+//           permission: 'active'
+//         }],
+//         data: {
+//           account: 'parent',
+//         }
+//       }
+//     ]
+//   }).then((result)=>{console.log(result)})
 
+
+
+
+//   eos.getTableRows({
+//     "json": true,
+//     "scope": 'lottery.code',
+//     "code": 'lottery.code',
+//     "table": "grade",
+//     "limit": 500
+// }).then(result => {
+//     console.log(result)
+// })
 
     // eos.getCurrencyBalance();
 
