@@ -33,6 +33,8 @@ class App extends Component {
       account: null,
       identity: null,
       grades: [],
+      children: [],
+      child: null,
       error: null,
       userType: -1 //-1 is unauthorized, 0 is superintendant, 1 is parent
     }
@@ -46,22 +48,73 @@ class App extends Component {
       this.setState({scatter});
 
       const eos = scatter.eos( network, Eos, eosOptions, "http")
+      this.setState({eos})
+      this.getGrades(eos)
+      this.getChildren()
+  })
+  }
 
-      eos.getTableRows({
+  getGrades(eos) {
+    eos.getTableRows({
+      "json": true,
+      "scope": 'lottery.code',
+      "code": 'lottery.code',
+      "table": "grade",
+      "limit": 13
+    }).then(result => {
+      console.log(result)
+      this.setState({grades: result.rows})
+    }).catch((error) =>{
+      this.setState(error)
+    })
+  }
+
+  getChildren() {
+    this.state.eos.getTableRows({
         "json": true,
         "scope": 'lottery.code',
         "code": 'lottery.code',
-        "table": "grade",
-        "limit": 13
+        "table": "student",
       }).then(result => {
-        console.log(result)
-        this.setState({grades: result.rows})
+          this.setState({children: result.rows})
       }).catch((error) =>{
-        this.setState(error)
+          this.setState(error)
       })
+}
 
-      this.setState({eos})
-  })
+  saveChild(child) {
+    const account = this.state.account
+    this.state.eos.contract('lottery.code').then(contract => {
+            const options = { authorization: [ account.name+'@'+account.authority ] };
+            // void addstudent(const account_name account, uint64_t ssn, string firstname, string lastname, uint64_t grade) {
+            contract
+            .addstudent(account.name, child.ssn, child.firstname, child.lastname, child.grade, options)
+            .then(() => { 
+              this.getGrades(this.state.eos)
+              this.getChildren()
+              this.setChild(null)  
+            })
+            .catch(error => console.log("caught addstudent error: "+error))
+          }).catch(error => console.log(error));
+  }
+
+  deleteChild(child) {
+    const account = this.state.account
+    this.state.eos.contract('lottery.code').then(contract => {
+            const options = { authorization: [ account.name+'@'+account.authority ] };
+            contract
+            .remstudent(account.name, child.ssn, options)
+            .then(() => { 
+              this.getGrades(this.state.eos)
+              this.getChildren()
+              this.setChild(null) 
+            })
+            .catch(error => console.log("caught addstudent error: "+error))
+          }).catch(error => console.log(error));
+  }
+
+  setChild(child) {
+    this.setState({child})
   }
 
   authenticateParent(){
@@ -105,8 +158,7 @@ class App extends Component {
       }
       
       this.state.eos.contract('lottery.code').then(contract => {
-        //const options = { authorization: [ account.name+'@'+account.authority ] };
-        //contract.getgrades(account.name, options).catch(error => console.log("caught getgrades error"))
+        this.setState({contract})
       }).catch(error => console.log(error)); 
 
     }).catch(error => {
@@ -131,7 +183,18 @@ class App extends Component {
 
   renderUserView() {
     if(this.state.userType === 1) {
-      return <Parent eos={this.state.eos} account={this.state.account} identity={this.state.identity}/>
+      return (
+      <Parent 
+        children={this.state.children} 
+        grades={this.state.grades}
+        child={this.state.child}
+        account={this.state.account} 
+        identity={this.state.identity}
+        onSave={(child)=>{this.saveChild(child)}}
+        onDelete={(child)=>{this.deleteChild(child)}}
+        onSelectChild={(child)=>{this.setChild(child)}}
+        />
+      )
     } else if(this.state.userType === 0) {
       return <Superintendent />
     } else {

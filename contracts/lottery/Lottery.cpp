@@ -26,9 +26,9 @@ namespace CipherZ {
             auto student_iter = students.find(ssn);
             eosio_assert(student_iter == students.end(), "student already exists");
             
-            auto parent_index = students.template get_index<N(byparent)>();
-            auto parent_iter = parent_index.find(account);
-            eosio_assert(parent_iter == parent_index.end(), "A student has already been entered by this parent");
+            // auto parent_index = students.template get_index<N(byparent)>();
+            // auto parent_iter = parent_index.find(account);
+            // eosio_assert(parent_iter == parent_index.end(), "A student has already been entered by this parent");
 
 
             students.emplace(account, [&](auto& student) {
@@ -76,12 +76,23 @@ namespace CipherZ {
             //@abi action
             void remstudent(const account_name account, const uint64_t ssn) {
                 require_auth(account);
+
                 studentMultiIndex students(_self, _self);
                 auto iterator = students.find(ssn);
                 eosio_assert(iterator != students.end(), "student not found");
                 auto student = (*iterator);
                 eosio_assert(student.account_name == account, "only parent can remove student");
+
+                // Grade logic
+                gradeIndex grades(_self, _self);
+                auto grade_iter = grades.find(student.grade);
+
+                grades.modify(grade_iter, account, [&](auto& grade) {
+                    grade.applicants = grade.applicants - 1;
+                });
+
                 students.erase(iterator);
+
             }
 
             //@abi action

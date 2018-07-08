@@ -9,7 +9,7 @@ export default class School extends Component {
 
     renderGrade(grade){
         return (
-            <tr key={grade}>
+            <tr key={grade.grade_num}>
                 <td>{grade.grade_num}</td>
                 <td>{grade.openings}</td>
                 <td>{grade.applicants}</td>

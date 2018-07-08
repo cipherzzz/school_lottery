@@ -3,80 +3,120 @@ import React, { Component } from "react";
 import "./App.css";
 import "./css/pure-min.css";
 
-//<div className="pure-control-group">
-
 export default class Parent extends Component {
 
     constructor(props) {
         super(props)
         this.state = {
-            firstName: null,
-            lastName: null,
-            grade: null,
-            ssn: null
+            firstName: '',
+            lastName: '',
+            grade: '',
+            ssn: '',
             }
     }
 
-    componentDidMount() {
-    
-        this.props.eos.getTableRows({
-            "json": true,
-            "scope": 'lottery.code',
-            "code": 'lottery.code',
-            "table": "student",
-            "limit": 1
-          }).then(result => {
-            console.log(result)
-            if(result.rows.length === 1) {
-                const child = result.rows[0]
-                this.setState({firstName: child.firstname,
-                                lastName: child.lastname,
-                                grade: child.grade,
-                                ssn: child.ssn})
-            } 
-          }).catch((error) =>{
-            this.setState(error)
-          })
+    componentWillReceiveProps(newProps) {
+        console.log("receiveProps: "+ JSON.stringify(newProps.child))
+        this.stateFromProps(newProps)
+    }
+
+    stateFromProps(props){
+        if(props.child) {
+            this.setState({
+                firstName: props.child.firstname,
+                lastName: props.child.lastname,
+                grade: props.child.grade,
+                ssn: props.child.ssn,
+                })
+        } else {
+            this.setState({
+                firstName: "",
+                lastName: "",
+                grade: "",
+                ssn: "",
+                })
+        }
+    }
+
+    childFromState(){
+        return {
+            firstname: this.state.firstName,
+            lastname: this.state.lastName,
+            grade: this.state.grade,
+            ssn: this.state.ssn,
+        }
     }
 
     onChangeFirstName(e) {
-        this.setState({ firstName: e.target.value });
+        this.setState({ firstName: e.target.value,
+            firstNameValid: e.target.value !== '' });
     }
 
     onChangeLastName(e) {
-        this.setState({ lastName: e.target.value });
+        this.setState({ lastName: e.target.value,
+            lastNameValid: e.target.value !== '' });
     }
 
     onChangeGrade(e) {
-        this.setState({ grade: e.target.value });
+        this.setState({ grade: e.target.value,
+            gradeValid: e.target.value !== '' });
     }
 
     onChangeSSN(e) {
-        this.setState({ ssn: e.target.value });
+        this.setState({ ssn: e.target.value,
+            ssnValid: e.target.value !== '' });
     }
 
-    onDelete() {
-        const account = this.props.account
-        this.props.eos.contract('lottery.code').then(contract => {
-            const options = { authorization: [ account.name+'@'+account.authority ] };
-            contract
-            .remstudent(account.name, this.state.ssn, options)
-            .catch(error => console.log("caught remstudent error: "+error))
-          }).catch(error => console.log(error)); 
+     onDelete() {
+        this.props.onDelete(this.childFromState())
     }
     
     onSave() {
-        const account = this.props.account
-        this.props.eos.contract('lottery.code').then(contract => {
-            const options = { authorization: [ account.name+'@'+account.authority ] };
-            // void addstudent(const account_name account, uint64_t ssn, string firstname, string lastname, uint64_t grade) {
-            contract
-            .addstudent(account.name, this.state.ssn, this.state.firstName, this.state.lastName, this.state.grade, options)
-            .catch(error => console.log("caught addstudent error: "+error))
-          }).catch(error => console.log(error)); 
+        if(this.state.firstName && this.state.lastName && this.state.grade && this.state.ssn) {
+            this.props.onSave(this.childFromState())
+        }
+        
+    }
+
+
+    renderChild(child){
+        return (
+        <tr onClick={()=> this.props.onSelectChild(child)}>
+            <td>{child.firstname}</td>
+            <td>{child.lastname}</td>
+            <td>{child.grade}</td>
+            <td>{child.ssn}</td>
+            <td><a href='#'>Select</a></td>
+        </tr>)   
+    }
+
+    renderGrade(grade) {
+        return <option value={grade.grade_num}>{grade.grade_num}</option>
+    }
+
+    renderRequiredField(key){
+        console.log(this.state[key])
+        if(this.state[key] === true) {
+            return <div />
+        } else {
+            return <span className="pure-form-message-inline">This is a required field.</span>
+        }
     }
 
     render() {
+
+        let children = []
+        let data = this.props.children ? this.props.children : []
+        data.forEach(child => {
+            children.push(this.renderChild(child))    
+        })
+
+        let grades = []
+        let gradeList = this.props.grades ? this.props.grades : []
+        gradeList.forEach(grade => {
+            grades.push(this.renderGrade(grade))    
+        })
+        grades.unshift(<option></option>)
 
         return (
         <div>    
@@ -103,7 +143,23 @@ export default class Parent extends Component {
                     <td>{this.props.identity.location.zipcode}</td>
                 </tr>
             </tbody>
-        </table>                 
+        </table>
+        <h2>Students</h2>
+        <table className="pure-table pure-table-horizontal">
+            <thead>
+                <tr>
+                    <th>First</th>
+                    <th>Last</th>
+                    <th>Grade</th>
+                    <th>SSN</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+        
+            <tbody>
+                {children}
+            </tbody>
+        </table>                  
         <h2>Add/Edit Child</h2>
         <p>Enter your child's information</p>
         <div className="pure-form pure-form-aligned">
@@ -114,6 +170,7 @@ export default class Parent extends Component {
                         value={this.state.firstName}
                         onChange={this.onChangeFirstName.bind(this)}
                         />
+                        {this.renderRequiredField("firstNameValid")}
                 </div>
 
                 <div className="pure-control-group">
@@ -122,14 +179,17 @@ export default class Parent extends Component {
                         value={this.state.lastName}
                         onChange={this.onChangeLastName.bind(this)} 
                         />
+                        {this.renderRequiredField("lastNameValid")}
                 </div>
 
                 <div className="pure-control-group">
                     <label htmlFor="name">Grade</label>
-                    <input id="grade" type="text" placeholder="Entering grade"
-                        onChange={this.onChangeGrade.bind(this)}
-                        value={this.state.grade} 
-                        />
+                        <select id="state"
+                        value={this.state.grade}
+                        onChange={this.onChangeGrade.bind(this)}>
+                        {grades}
+                </select>   
+                {this.renderRequiredField("gradeValid")} 
                 </div>
 
                 <div className="pure-control-group">
@@ -138,6 +198,7 @@ export default class Parent extends Component {
                         onChange={this.onChangeSSN.bind(this)}
                         value={this.state.ssn}
                         />
+                        {this.renderRequiredField("ssnValid")}
                 </div>
 
                 <div className="pure-controls">
