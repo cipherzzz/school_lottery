@@ -4514,9 +4514,6 @@
   (call $require_auth
    (get_local $1)
   )
-  (set_local $6
-   (i32.const 0)
-  )
   (i32.store
    (i32.add
     (i32.add
@@ -4725,7 +4722,7 @@
    (call $eosio_assert
     (i32.eq
      (i32.load offset=32
-      (tee_local $6
+      (tee_local $0
        (call $_ZNK5eosio11multi_indexILy7335401720312233984EN7CipherZ7Lottery5gradeEJEE31load_object_by_primary_iteratorEl
         (get_local $7)
         (get_local $0)
@@ -4736,21 +4733,18 @@
     )
     (i32.const 112)
    )
-  )
-  (call $eosio_assert
-   (i32.ne
-    (get_local $6)
-    (i32.const 0)
+   (call $eosio_assert
+    (i32.const 1)
+    (i32.const 608)
    )
-   (i32.const 608)
-  )
-  (call $_ZN5eosio11multi_indexILy7335401720312233984EN7CipherZ7Lottery5gradeEJEE6modifyIZNS2_10remstudentEyyEUlRT_E_EEvRKS3_yOS6_
-   (get_local $7)
-   (get_local $6)
-   (get_local $1)
-   (i32.add
+   (call $_ZN5eosio11multi_indexILy7335401720312233984EN7CipherZ7Lottery5gradeEJEE6modifyIZNS2_10remstudentEyyEUlRT_E_EEvRKS3_yOS6_
     (get_local $7)
-    (i32.const 136)
+    (get_local $0)
+    (get_local $1)
+    (i32.add
+     (get_local $7)
+     (i32.const 136)
+    )
    )
   )
   (call $eosio_assert
@@ -4764,7 +4758,7 @@
   (block $label$2
    (br_if $label$2
     (i32.lt_s
-     (tee_local $6
+     (tee_local $0
       (call $db_next_i64
        (i32.load offset=60
         (get_local $4)
@@ -4784,7 +4778,7 @@
       (get_local $7)
       (i32.const 96)
      )
-     (get_local $6)
+     (get_local $0)
     )
    )
   )
@@ -4798,7 +4792,7 @@
   (block $label$3
    (br_if $label$3
     (i32.eqz
-     (tee_local $0
+     (tee_local $3
       (i32.load offset=24
        (get_local $7)
       )
@@ -4811,7 +4805,7 @@
       (i32.eq
        (tee_local $4
         (i32.load
-         (tee_local $3
+         (tee_local $6
           (i32.add
            (get_local $7)
            (i32.const 28)
@@ -4819,11 +4813,11 @@
          )
         )
        )
-       (get_local $0)
+       (get_local $3)
       )
      )
      (loop $label$6
-      (set_local $6
+      (set_local $0
        (i32.load
         (tee_local $4
          (i32.add
@@ -4840,16 +4834,16 @@
       (block $label$7
        (br_if $label$7
         (i32.eqz
-         (get_local $6)
+         (get_local $0)
         )
        )
        (call $_ZdlPv
-        (get_local $6)
+        (get_local $0)
        )
       )
       (br_if $label$6
        (i32.ne
-        (get_local $0)
+        (get_local $3)
         (get_local $4)
        )
       )
@@ -4865,12 +4859,12 @@
      (br $label$4)
     )
     (set_local $4
-     (get_local $0)
+     (get_local $3)
     )
    )
    (i32.store
+    (get_local $6)
     (get_local $3)
-    (get_local $0)
    )
    (call $_ZdlPv
     (get_local $4)
@@ -4925,7 +4919,7 @@
   (block $label$10
    (br_if $label$10
     (i32.eqz
-     (tee_local $0
+     (tee_local $3
       (i32.load offset=120
        (get_local $7)
       )
@@ -4936,9 +4930,9 @@
     (block $label$12
      (br_if $label$12
       (i32.eq
-       (tee_local $6
+       (tee_local $0
         (i32.load
-         (tee_local $3
+         (tee_local $6
           (i32.add
            (get_local $7)
            (i32.const 124)
@@ -4946,22 +4940,22 @@
          )
         )
        )
-       (get_local $0)
+       (get_local $3)
       )
      )
      (loop $label$13
       (set_local $4
        (i32.load
-        (tee_local $6
+        (tee_local $0
          (i32.add
-          (get_local $6)
+          (get_local $0)
           (i32.const -24)
          )
         )
        )
       )
       (i32.store
-       (get_local $6)
+       (get_local $0)
        (i32.const 0)
       )
       (block $label$14
@@ -5016,8 +5010,8 @@
       )
       (br_if $label$13
        (i32.ne
+        (get_local $3)
         (get_local $0)
-        (get_local $6)
        )
       )
      )
@@ -5032,12 +5026,12 @@
      (br $label$11)
     )
     (set_local $4
-     (get_local $0)
+     (get_local $3)
     )
    )
    (i32.store
+    (get_local $6)
     (get_local $3)
-    (get_local $0)
    )
    (call $_ZdlPv
     (get_local $4)

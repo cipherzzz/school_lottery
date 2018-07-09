@@ -16,7 +16,6 @@ export default class Parent extends Component {
     }
 
     componentWillReceiveProps(newProps) {
-        console.log("receiveProps: "+ JSON.stringify(newProps.child))
         this.stateFromProps(newProps)
     }
 
@@ -42,7 +41,7 @@ export default class Parent extends Component {
         return {
             firstname: this.state.firstName,
             lastname: this.state.lastName,
-            grade: this.state.grade,
+            grade_num: this.state.grade,
             ssn: this.state.ssn,
         }
     }
@@ -81,21 +80,28 @@ export default class Parent extends Component {
 
     renderChild(child){
         return (
-        <tr onClick={()=> this.props.onSelectChild(child)}>
+        <tr key={child.ssn}>
             <td>{child.firstname}</td>
             <td>{child.lastname}</td>
             <td>{child.grade}</td>
             <td>{child.ssn}</td>
-            <td><a href='#'>Select</a></td>
+            <td>
+                <button
+                        className="pure-button pure-button-small"
+                        onClick={()=>{this.props.onSelectChild(child)}}>Update</button> 
+                &nbsp;&nbsp;
+                <button
+                        className="pure-button pure-button-small"
+                        onClick={()=>{this.props.onDelete(child)}}>Delete</button> 
+            </td>
         </tr>)   
     }
 
     renderGrade(grade) {
-        return <option value={grade.grade_num}>{grade.grade_num}</option>
+        return <option key={grade.grade_num} value={grade.grade_num}>{grade.grade_num}</option>
     }
 
     renderRequiredField(key){
-        console.log(this.state[key])
         if(this.state[key] === true) {
             return <div />
         } else {
@@ -116,7 +122,7 @@ export default class Parent extends Component {
         gradeList.forEach(grade => {
             grades.push(this.renderGrade(grade))    
         })
-        grades.unshift(<option></option>)
+        grades.unshift(<option key={' '}></option>)
 
         return (
         <div>    
@@ -159,7 +165,15 @@ export default class Parent extends Component {
             <tbody>
                 {children}
             </tbody>
-        </table>                  
+        </table>
+        <br />
+        <button
+            className="pure-button pure-button-primary"
+            onClick={()=>{this.props.onSelectChild(null)}}>Add Child
+        </button>
+        <br />
+        <hr />
+        <br />                  
         <h2>Add/Edit Child</h2>
         <p>Enter your child's information</p>
         <div className="pure-form pure-form-aligned">
@@ -205,10 +219,7 @@ export default class Parent extends Component {
                     <button
                         className="pure-button pure-button-primary"
                         onClick={this.onSave.bind(this)}>Save</button>
-                        &nbsp;&nbsp;
-                    <button
-                        className="pure-button pure-button-primary"
-                        onClick={this.onDelete.bind(this)}>Delete</button>    
+                        &nbsp;&nbsp;   
                 </div>
             </fieldset>
         </div>

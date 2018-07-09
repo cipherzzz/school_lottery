@@ -10,7 +10,7 @@ import './App.css'
 
 import School from './School'
 import Parent from './Parent'
-import Superintendent from './Superintendent'
+import Headmaster from './Headmaster'
 
 const network = {
   protocol:'http',
@@ -88,7 +88,7 @@ class App extends Component {
             const options = { authorization: [ account.name+'@'+account.authority ] };
             // void addstudent(const account_name account, uint64_t ssn, string firstname, string lastname, uint64_t grade) {
             contract
-            .addstudent(account.name, child.ssn, child.firstname, child.lastname, child.grade, options)
+            .addstudent(account.name, child.ssn, child.firstname, child.lastname, child.grade_num, options)
             .then(() => { 
               this.getGrades(this.state.eos)
               this.getChildren()
@@ -109,12 +109,46 @@ class App extends Component {
               this.getChildren()
               this.setChild(null) 
             })
-            .catch(error => console.log("caught addstudent error: "+error))
+            .catch(error => console.log("caught remstudent error: "+error))
           }).catch(error => console.log(error));
   }
 
   setChild(child) {
     this.setState({child})
+  }
+
+  saveGrade(grade) {
+    const account = this.state.account
+    this.state.eos.contract('lottery.code').then(contract => {
+            const options = { authorization: [ account.name+'@'+account.authority ] };
+            // void addgrade(const account_name account, uint64_t grade_num, uint64_t openings) {
+            contract
+            .addgrade(account.name, grade.grade_num, grade.openings, options)
+            .then(() => { 
+              this.getGrades(this.state.eos)
+              this.setGrade(null)  
+            })
+            .catch(error => console.log("caught addgrade error: "+error))
+          }).catch(error => console.log(error));
+  }
+
+  deleteGrade(grade) {
+    const account = this.state.account
+    // void remgrade(const account_name account, const uint64_t grade_num) {
+    this.state.eos.contract('lottery.code').then(contract => {
+            const options = { authorization: [ account.name+'@'+account.authority ] };
+            contract
+            .remgrade(account.name, grade.grade_num, options)
+            .then(() => { 
+              this.getGrades(this.state.eos)
+              this.setGrade(null) 
+            })
+            .catch(error => console.log("caught remgrade error: "+error))
+          }).catch(error => console.log(error));
+  }
+
+  setGrade(grade) {
+    this.setState({grade})
   }
 
   authenticateParent(){
@@ -133,11 +167,17 @@ class App extends Component {
 
   loadScatterIdentity(isParent) {
     
-    const requiredFields = {
+    let requiredFields = {
       personal:['firstname', 'lastname'],
       location:['address', 'city', 'state', 'zipcode', 'phone'],
       accounts:[network]
     };
+    if(!isParent) {
+      requiredFields = {
+        personal:['firstname', 'lastname'],
+        accounts:[network]
+      }
+    }
 
     this.state.scatter.getIdentity(requiredFields).then(identity => {
       console.log(identity, "identityFound")
@@ -196,7 +236,17 @@ class App extends Component {
         />
       )
     } else if(this.state.userType === 0) {
-      return <Superintendent />
+      return (
+      <Headmaster 
+        account={this.state.account} 
+        identity={this.state.identity}
+        grades={this.state.grades}
+        grade={this.state.grade}
+        onSave={(grade)=>{this.saveGrade(grade)}}
+        onDelete={(grade)=>{this.deleteGrade(grade)}}
+        onSelectGrade={(grade)=>{this.setGrade(grade)}}
+        />
+      )
     } else {
       return <div/>
     }
@@ -215,16 +265,17 @@ class App extends Component {
               <h1>Trust the System</h1>
               <p>
                 This EOS dApp is leveling the playing field for school lottery admissions. 
-                The Lake Wogegon public school system has received multiple complaints about unfair admission practices in the
-                more popular schools in the district and has created this solution.
+                Hogwarts has received multiple complaints about unfair admission practices to the school of Witchcraft and Wizardry 
+                and has created this solution.
                 <br/><br/>
                 <h3>Roles</h3>
                 <ul>
                   <li><b>Superintendent</b> - Inputs total openings per grade, runs lottery</li>
                   <li><b>Parent</b> - Inputs parent/child information</li>
                 </ul>
-                <School name="Lake Wobegon Elementary" grades={this.state.grades}/>
+                <School name="Hogwarts" grades={this.state.grades}/>
               </p>
+              <hr />
               {this.renderUserView()}
               <br/><br/>
               {this.renderAuthenticateButtons()}

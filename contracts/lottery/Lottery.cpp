@@ -87,9 +87,11 @@ namespace CipherZ {
                 gradeIndex grades(_self, _self);
                 auto grade_iter = grades.find(student.grade);
 
-                grades.modify(grade_iter, account, [&](auto& grade) {
+                if(grade_iter != grades.end()) {
+                    grades.modify(grade_iter, account, [&](auto& grade) {
                     grade.applicants = grade.applicants - 1;
                 });
+                }
 
                 students.erase(iterator);
 
