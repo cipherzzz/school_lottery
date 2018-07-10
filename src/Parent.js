@@ -12,6 +12,7 @@ export default class Parent extends Component {
             lastName: '',
             grade: '',
             ssn: '',
+            updateType: -1
             }
     }
 
@@ -66,15 +67,40 @@ export default class Parent extends Component {
             ssnValid: e.target.value !== '' });
     }
 
-     onDelete() {
-        this.props.onDelete(this.childFromState())
+     onDelete(child) {
+        this.props.onDelete(child)
+        this.setState({updateType: -1})
     }
     
-    onSave() {
-        if(this.state.firstName && this.state.lastName && this.state.grade && this.state.ssn) {
-            this.props.onSave(this.childFromState())
+    isValid() {
+        if(this.state.firstName === '' || this.state.lastName === '' || this.state.grade === ''
+        || this.state.ssn === '') {
+            return false
+        } else {
+            return true
         }
-        
+    }
+
+    onSave() {
+        if(this.isValid()) {
+            this.props.onSave(this.childFromState())
+        } 
+    }
+
+    onUpdate() {
+        if(this.isValid()) {
+            this.props.onUpdate(this.childFromState())
+        } 
+    }
+
+    onAddForm() {
+        this.setState({updateType: 0})
+        this.props.onSelectChild(null) 
+    }
+
+    onUpdateForm(child) {
+        this.setState({updateType: 1})
+        this.props.onSelectChild(child) 
     }
 
 
@@ -88,11 +114,11 @@ export default class Parent extends Component {
             <td>
                 <button
                         className="pure-button pure-button-small"
-                        onClick={()=>{this.props.onSelectChild(child)}}>Update</button> 
+                        onClick={()=>{this.onUpdateForm(child)}}>Update</button> 
                 &nbsp;&nbsp;
                 <button
                         className="pure-button pure-button-small"
-                        onClick={()=>{this.props.onDelete(child)}}>Delete</button> 
+                        onClick={()=>{this.onDelete(child)}}>Delete</button> 
             </td>
         </tr>)   
     }
@@ -109,6 +135,86 @@ export default class Parent extends Component {
         }
     }
 
+    renderChildForm() {
+        if(this.state.updateType === -1) {
+            return <div />
+        } else  {
+
+            let grades = []
+            let gradeList = this.props.grades ? this.props.grades : []
+            gradeList.forEach(grade => {
+                grades.push(this.renderGrade(grade))    
+            })
+            grades.unshift(<option key={' '}></option>)
+
+            let action = this.onSave
+            let title = 'Add Child'
+            if(this.state.updateType === 1) {
+                action = this.onUpdate
+                title = 'Update Child'
+            }
+
+            return (
+                <div>
+                    <h2>{title}</h2>
+                    <p>Enter your child's information</p>
+                    <div className="pure-form pure-form-aligned">
+                        <fieldset>
+                            <div className="pure-control-group">
+                                <label htmlFor="name">First Name</label>
+                                <input id="firstName" type="text" placeholder="Child's first name"
+                                    value={this.state.firstName}
+                                    onChange={this.onChangeFirstName.bind(this)}
+                                    />
+                                    {this.renderRequiredField("firstNameValid")}
+                            </div>
+
+                            <div className="pure-control-group">
+                                <label htmlFor="name">Last Name</label>
+                                <input id="lastName" type="text" placeholder="Child's last name"
+                                    value={this.state.lastName}
+                                    onChange={this.onChangeLastName.bind(this)} 
+                                    />
+                                    {this.renderRequiredField("lastNameValid")}
+                            </div>
+
+                            <div className="pure-control-group">
+                                <label htmlFor="name">Grade</label>
+                                    <select id="state"
+                                    value={this.state.grade}
+                                    onChange={this.onChangeGrade.bind(this)}>
+                                    {grades}
+                            </select>   
+                            {this.renderRequiredField("gradeValid")} 
+                            </div>
+
+                            <div className="pure-control-group">
+                                <label htmlFor="name">SSN</label>
+                                <input 
+                                    id="ssn" 
+                                    type="text" 
+                                    placeholder="Last 4 of child's social"
+                                    disabled={this.state.updateType === 1}
+                                    onChange={this.onChangeSSN.bind(this)}
+                                    value={this.state.ssn}
+                                    />
+                                    {this.renderRequiredField("ssnValid")}
+                            </div>
+
+                            <div className="pure-controls">
+                                <button
+                                    disabled={!this.isValid()}
+                                    className="pure-button pure-button-primary"
+                                    onClick={action.bind(this)}>Save</button>
+                                    &nbsp;&nbsp;   
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+            )
+        }
+    }
+
     render() {
 
         let children = []
@@ -116,13 +222,6 @@ export default class Parent extends Component {
         data.forEach(child => {
             children.push(this.renderChild(child))    
         })
-
-        let grades = []
-        let gradeList = this.props.grades ? this.props.grades : []
-        gradeList.forEach(grade => {
-            grades.push(this.renderGrade(grade))    
-        })
-        grades.unshift(<option key={' '}></option>)
 
         return (
         <div>    
@@ -169,60 +268,12 @@ export default class Parent extends Component {
         <br />
         <button
             className="pure-button pure-button-primary"
-            onClick={()=>{this.props.onSelectChild(null)}}>Add Child
+            onClick={()=>{this.onAddForm()}}>Add Child
         </button>
         <br />
         <hr />
-        <br />                  
-        <h2>Add/Edit Child</h2>
-        <p>Enter your child's information</p>
-        <div className="pure-form pure-form-aligned">
-            <fieldset>
-                <div className="pure-control-group">
-                    <label htmlFor="name">First Name</label>
-                    <input id="firstName" type="text" placeholder="Child's first name"
-                        value={this.state.firstName}
-                        onChange={this.onChangeFirstName.bind(this)}
-                        />
-                        {this.renderRequiredField("firstNameValid")}
-                </div>
-
-                <div className="pure-control-group">
-                    <label htmlFor="name">Last Name</label>
-                    <input id="lastName" type="text" placeholder="Child's last name"
-                        value={this.state.lastName}
-                        onChange={this.onChangeLastName.bind(this)} 
-                        />
-                        {this.renderRequiredField("lastNameValid")}
-                </div>
-
-                <div className="pure-control-group">
-                    <label htmlFor="name">Grade</label>
-                        <select id="state"
-                        value={this.state.grade}
-                        onChange={this.onChangeGrade.bind(this)}>
-                        {grades}
-                </select>   
-                {this.renderRequiredField("gradeValid")} 
-                </div>
-
-                <div className="pure-control-group">
-                    <label htmlFor="name">SSN</label>
-                    <input id="ssn" type="text" placeholder="Last 4 of child's social"
-                        onChange={this.onChangeSSN.bind(this)}
-                        value={this.state.ssn}
-                        />
-                        {this.renderRequiredField("ssnValid")}
-                </div>
-
-                <div className="pure-controls">
-                    <button
-                        className="pure-button pure-button-primary"
-                        onClick={this.onSave.bind(this)}>Save</button>
-                        &nbsp;&nbsp;   
-                </div>
-            </fieldset>
-        </div>
+        <br /> 
+        {this.renderChildForm()}                 
         </div>
         )
     }

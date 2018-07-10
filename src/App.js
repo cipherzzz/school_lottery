@@ -98,6 +98,22 @@ class App extends Component {
           }).catch(error => console.log(error));
   }
 
+  updateChild(child) {
+    const account = this.state.account
+    this.state.eos.contract('lottery.code').then(contract => {
+            const options = { authorization: [ account.name+'@'+account.authority ] };
+            // void addstudent(const account_name account, uint64_t ssn, string firstname, string lastname, uint64_t grade) {
+            contract
+            .updatechild(account.name, child.ssn, child.firstname, child.lastname, child.grade_num, options)
+            .then(() => { 
+              this.getGrades(this.state.eos)
+              this.getChildren()
+              this.setChild(null)  
+            })
+            .catch(error => console.log("caught updatestudent error: "+error))
+          }).catch(error => console.log(error));
+  }
+
   deleteChild(child) {
     const account = this.state.account
     this.state.eos.contract('lottery.code').then(contract => {
@@ -129,6 +145,21 @@ class App extends Component {
               this.setGrade(null)  
             })
             .catch(error => console.log("caught addgrade error: "+error))
+          }).catch(error => console.log(error));
+  }
+
+  updateGrade(grade) {
+    const account = this.state.account
+    this.state.eos.contract('lottery.code').then(contract => {
+            const options = { authorization: [ account.name+'@'+account.authority ] };
+            // void updategrade(const account_name account, uint64_t grade_num, uint64_t openings) {
+            contract
+            .updategrade(account.name, grade.grade_num, grade.openings, options)
+            .then(() => { 
+              this.getGrades(this.state.eos)
+              this.setGrade(null)  
+            })
+            .catch(error => console.log("caught updategrade error: "+error))
           }).catch(error => console.log(error));
   }
 
@@ -210,13 +241,20 @@ class App extends Component {
     if(this.state.userType === -1) {
       return (
         <div>
-          <button onClick={this.authenticateParent.bind(this)}>Authenticate as Parent with Scatter</button>
-          <br/><br/>
-          <button onClick={this.authenticateSuperintendent.bind(this)}>Authenticate as Superintendent with Scatter</button>
+          <a href="#" className="pure-menu-heading pure-menu-link">School Lottery</a>
+          <a onClick={this.authenticateParent.bind(this)} style={{float: "right", cursor: "pointer"}} className="pure-menu-heading pure-menu-button">Login as Parent</a>
+          {/* <button onClick={this.authenticateParent.bind(this)}>Authenticate as Parent with Scatter</button> */}
+          <a onClick={this.authenticateSuperintendent.bind(this)} style={{float: "right", cursor: "pointer"}} className="pure-menu-heading pure-menu-button">Login as Admin</a>
+          {/* <button onClick={this.authenticateSuperintendent.bind(this)}>Authenticate as Superintendent with Scatter</button> */}
         </div>  
       )
     } else {
-      return <button onClick={this.logout.bind(this)}>Logout</button>
+      return (
+        <div>
+          <a href="#" className="pure-menu-heading pure-menu-link">School Lottery</a>
+          <a onClick={this.logout.bind(this)} style={{float: "right", cursor: "pointer"}} className="pure-menu-heading pure-menu-button">Logout</a>
+        </div>
+      )
     }
   }
 
@@ -231,6 +269,7 @@ class App extends Component {
         account={this.state.account} 
         identity={this.state.identity}
         onSave={(child)=>{this.saveChild(child)}}
+        onUpdate={(child)=>{this.updateChild(child)}}
         onDelete={(child)=>{this.deleteChild(child)}}
         onSelectChild={(child)=>{this.setChild(child)}}
         />
@@ -243,6 +282,7 @@ class App extends Component {
         grades={this.state.grades}
         grade={this.state.grade}
         onSave={(grade)=>{this.saveGrade(grade)}}
+        onUpdate={(grade)=>{this.updateGrade(grade)}}
         onDelete={(grade)=>{this.deleteGrade(grade)}}
         onSelectGrade={(grade)=>{this.setGrade(grade)}}
         />
@@ -257,7 +297,7 @@ class App extends Component {
     return (
       <div className="App">
         <nav className="navbar pure-menu pure-menu-horizontal">
-            <a href="#" className="pure-menu-heading pure-menu-link">School Lottery</a>
+            {this.renderAuthenticateButtons()}
         </nav>
         <main className="container">
           <div className="pure-g">
@@ -277,8 +317,6 @@ class App extends Component {
               </p>
               <hr />
               {this.renderUserView()}
-              <br/><br/>
-              {this.renderAuthenticateButtons()}
             </div>
           </div>
         </main>

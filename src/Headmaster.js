@@ -53,8 +53,8 @@ export default class Headmaster extends Component {
             openingsValid: e.target.value !== '' });
     }
 
-     onDelete() {
-        this.props.onDelete(this.gradeFromState())
+     onDelete(grade) {
+        this.props.onDelete(grade)
         this.setState({updateType: -1})
     }
     
@@ -68,14 +68,22 @@ export default class Headmaster extends Component {
         this.props.onSelectGrade(this.gradeFromState()) 
     }
 
+    isValid() {
+        if(this.state.grade === '' || this.state.openings === '') {
+            return false
+        } else {
+            return true
+        }
+    }
+
     onSave() {
-        if(this.state.grade && this.state.openings) {
+        if(this.isValid()) {
             this.props.onSave(this.gradeFromState())
         }   
     }
 
     onUpdate() {
-        if(this.state.grade && this.state.openings) {
+        if(this.isValid()) {
             this.props.onUpdate(this.gradeFromState())
         }
         
@@ -140,6 +148,7 @@ export default class Headmaster extends Component {
                             <label htmlFor="name">Grade</label>
                                 <select id="state"
                                 value={this.state.grade}
+                                disabled={this.state.updateType === 1}
                                 onChange={this.onChangeGrade.bind(this)}>
                                 {gradeOptions}
                         </select>   
@@ -157,6 +166,7 @@ export default class Headmaster extends Component {
 
                         <div className="pure-controls">
                             <button
+                                disabled={!this.isValid()}
                                 className="pure-button pure-button-primary"
                                 onClick={action.bind(this)}>Save</button>
                                 &nbsp;&nbsp;   

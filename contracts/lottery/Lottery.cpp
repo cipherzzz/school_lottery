@@ -59,6 +59,32 @@ namespace CipherZ {
             }
 
             //@abi action
+            void updategrade(const account_name account, uint64_t grade_num, uint64_t openings) {
+                require_auth(account);
+                gradeIndex grades(_self, _self);
+                auto iterator = grades.find(grade_num);
+                eosio_assert(iterator != grades.end(), "grade does not exist");
+                grades.modify( iterator, _self, [&]( auto& _grade) {
+                    _grade.openings = openings;
+                });
+            }
+
+            //@abi action
+            void updatechild(const account_name account, uint64_t ssn, string firstname, string lastname, uint64_t grade) {
+                require_auth(account);
+                 // Student insertion
+                studentMultiIndex students(_self, _self);
+                auto student_iter = students.find(ssn);
+                eosio_assert(student_iter != students.end(), "student does not exist");
+
+                students.modify( student_iter, _self, [&]( auto& student) {
+                    student.firstname = firstname;
+                    student.lastname = lastname;
+                    student.grade = grade;
+                });
+            }
+
+            //@abi action
             void getstudent(const account_name account, const uint64_t ssn) {
                 require_auth(account);
                 studentMultiIndex students(_self, _self);
@@ -89,7 +115,7 @@ namespace CipherZ {
 
                 if(grade_iter != grades.end()) {
                     grades.modify(grade_iter, account, [&](auto& grade) {
-                    grade.applicants = grade.applicants - 1;
+                    grade.applicants = grade.applicants == 0 ? 0 : grade.applicants - 1;
                 });
                 }
 
@@ -216,5 +242,5 @@ namespace CipherZ {
             typedef multi_index<N(grade), grade> gradeIndex;
     };
 
-    EOSIO_ABI(Lottery, (addstudent)(addgrade)(getstudents)(getgrades)(getstudent)(getgrade)(runlottery)(remstudent)(remgrade))
+    EOSIO_ABI(Lottery, (addstudent)(addgrade)(getstudents)(getgrades)(getstudent)(getgrade)(runlottery)(remstudent)(remgrade)(updategrade)(updatechild))
 }
