@@ -1,1 +1,1 @@
-cleos set contract lottery.code ./contracts/lottery ./contracts/lottery/Lottery.wast ./contracts/lottery/Lottery.abi
+cleos set contract lottery.code ./contracts/Lottery ./contracts/Lottery/Lottery.wast ./contracts/Lottery/Lottery.abi
