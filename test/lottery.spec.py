@@ -19,7 +19,7 @@ class Test1(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        CONTRACT_NAME = "/Users/markmathis/Projects/EOS/test/school_lottery/contracts/Lottery"
+        CONTRACT_NAME = "/Users/markmathis/Projects/EOS/lottery/contracts/Lottery"
         testnet = node.reset()
         assert(not testnet.error)
 
@@ -49,13 +49,13 @@ class Test1(unittest.TestCase):
         cprint(""" Create a reference to the new contract """, 'magenta')
         contract = eosf.ContractBuilder(CONTRACT_NAME)
 
-        cprint(""" Not Building the contract abi due to jankyness """, 'magenta')
+        cprint(""" Not Building the contract abi/wast due to jankyness """, 'magenta')
 
         # cprint(""" Build the contract abi """, 'magenta')
         # assert(not contract.build_abi().error)
         
-        cprint(""" Build the contract wast """, 'magenta')
-        assert(not contract.build_wast().error)
+        # cprint(""" Build the contract wast """, 'magenta')
+        # assert(not contract.build_wast().error)
 
         cprint(""" Associate the contract with an account """, 'magenta')
         contract = eosf.Contract(account_deploy, CONTRACT_NAME)
