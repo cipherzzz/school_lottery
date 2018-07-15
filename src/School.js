@@ -13,9 +13,22 @@ export default class School extends Component {
                 <td>{grade.grade_num}</td>
                 <td>{grade.openings}</td>
                 <td>{grade.applicants}</td>
-                <td>Open</td>
+                <td>{grade.status}</td>
             </tr>
         )
+    }
+
+    renderLotteryButton(){
+        if(this.props.isAdmin) {
+            return (
+                <button
+                    className="pure-button pure-button-primary"
+                    onClick={()=>{this.props.onRunLottery()}}>Run Lottery
+                </button>
+            )
+        } else {
+            return null
+        }
     }
 
     render() {
@@ -43,6 +56,8 @@ export default class School extends Component {
                 {grades}
             </tbody>
         </table>
+        <br/>
+        {this.renderLotteryButton()}
         </div>
         )
     }

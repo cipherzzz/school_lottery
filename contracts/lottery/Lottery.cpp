@@ -55,6 +55,7 @@ namespace CipherZ {
                     _grade.account_name = account;
                     _grade.openings = openings;
                     _grade.grade_num = grade_num;
+                    _grade.status = 0;
                 });
             }
 
@@ -199,6 +200,9 @@ namespace CipherZ {
                         } 
                        student_iter++;
                     }
+                 grades.modify(grade_iter, account, [&](auto& grade) {
+                    grade.status = 1;
+                });   
                  grade_iter++;
                 }
             }
@@ -232,10 +236,11 @@ namespace CipherZ {
                 uint64_t grade_num;
                 uint64_t openings;
                 uint64_t applicants;
+                uint64_t status;
 
                 uint64_t primary_key() const { return grade_num; }
 
-                EOSLIB_SERIALIZE(grade, (account_name)(grade_num)(openings)(applicants))
+                EOSLIB_SERIALIZE(grade, (account_name)(grade_num)(openings)(applicants)(status))
             };
 
             //typedef multi_index<N(student), student> studentIndex;

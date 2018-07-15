@@ -182,6 +182,22 @@ class App extends Component {
     this.setState({grade})
   }
 
+  runLottery(){
+    const account = this.state.account
+    this.state.eos.contract('lottery.code').then(contract => {
+            const options = { authorization: [ account.name+'@'+account.authority ] };
+            contract
+            .runlottery(account.name, options)
+            .then(() => { 
+              this.getGrades(this.state.eos)
+              this.getChildren()
+              this.setGrade(null) 
+              this.setChild(null) 
+            })
+            .catch(error => console.log("caught runlottery error: "+error))
+          }).catch(error => console.log(error));
+  }
+
   authenticateParent(){
     this.loadScatterIdentity(true)
   }
@@ -292,6 +308,29 @@ class App extends Component {
     }
   }
 
+  renderUnauthenticated() {
+    if(this.state.userType === -1) {
+      return (
+        <div>
+                <h1>Trust the System</h1>
+                <p>
+                  This EOS dApp is leveling the playing field for school lottery admissions. 
+                  Hogwarts has received multiple complaints about unfair admission practices to the school of Witchcraft and Wizardry 
+                  and has created this solution.
+                  <br/><br/>
+                  <h3>Roles</h3>
+                  <ul>
+                    <li><b>Superintendent</b> - Inputs total openings per grade, runs lottery</li>
+                    <li><b>Parent</b> - Inputs parent/child information</li>
+                  </ul>
+                </p>
+                </div>
+      )
+    } else {
+      return null
+    }
+  }
+
   render() {
 
     return (
@@ -302,19 +341,12 @@ class App extends Component {
         <main className="container">
           <div className="pure-g">
             <div className="pure-u-1-1">
-              <h1>Trust the System</h1>
-              <p>
-                This EOS dApp is leveling the playing field for school lottery admissions. 
-                Hogwarts has received multiple complaints about unfair admission practices to the school of Witchcraft and Wizardry 
-                and has created this solution.
-                <br/><br/>
-                <h3>Roles</h3>
-                <ul>
-                  <li><b>Superintendent</b> - Inputs total openings per grade, runs lottery</li>
-                  <li><b>Parent</b> - Inputs parent/child information</li>
-                </ul>
-                <School name="Hogwarts" grades={this.state.grades}/>
-              </p>
+              {this.renderUnauthenticated()}
+              <School name="Hogwarts" 
+                grades={this.state.grades} 
+                isAdmin={this.state.userType === 0}
+                onRunLottery={()=>{this.runLottery()}}
+              />
               <hr />
               {this.renderUserView()}
             </div>

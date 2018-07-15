@@ -105,21 +105,30 @@ export default class Parent extends Component {
 
 
     renderChild(child){
+        let actionView = <td>
+            <button
+                    className="pure-button pure-button-small"
+                    onClick={()=>{}}>Email School</button>
+        </td>
+        if(child.result === 0) {
+            actionView = <td>
+            <button
+                    className="pure-button pure-button-small"
+                    onClick={()=>{this.onUpdateForm(child)}}>Update</button> 
+            &nbsp;&nbsp;
+            <button
+                    className="pure-button pure-button-small"
+                    onClick={()=>{this.onDelete(child)}}>Delete</button> 
+        </td>
+        }
         return (
         <tr key={child.ssn}>
             <td>{child.firstname}</td>
             <td>{child.lastname}</td>
             <td>{child.grade}</td>
             <td>{child.ssn}</td>
-            <td>
-                <button
-                        className="pure-button pure-button-small"
-                        onClick={()=>{this.onUpdateForm(child)}}>Update</button> 
-                &nbsp;&nbsp;
-                <button
-                        className="pure-button pure-button-small"
-                        onClick={()=>{this.onDelete(child)}}>Delete</button> 
-            </td>
+            <td>{child.result}</td>
+            {actionView}
         </tr>)   
     }
 
@@ -153,6 +162,7 @@ export default class Parent extends Component {
                 action = this.onUpdate
                 title = 'Update Child'
             }
+
 
             return (
                 <div>
@@ -257,6 +267,7 @@ export default class Parent extends Component {
                     <th>Last</th>
                     <th>Grade</th>
                     <th>SSN</th>
+                    <th>Placement</th>
                     <th>Action</th>
                 </tr>
             </thead>
