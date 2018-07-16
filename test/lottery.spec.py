@@ -56,9 +56,6 @@ class Test1(unittest.TestCase):
         cprint(""" Build the contract wast """, 'magenta')
         assert(not contract.build_wast().error)
 
-        cprint(""" Associate the contract with an account """, 'magenta')
-        contract = eosf.Contract(account_deploy, CONTRACT_NAME)
-
         cprint(""" Deploy the contract """, 'magenta')
         assert(not contract.deploy().error)
     
