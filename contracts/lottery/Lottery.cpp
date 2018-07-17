@@ -23,8 +23,9 @@ namespace CipherZ {
 
             // Student insertion
             studentMultiIndex students(_self, _self);
-            auto student_iter = students.find(ssn);
-            eosio_assert(student_iter == students.end(), "student already exists");
+            auto ssn_index = students.template get_index<N(byssn)>();
+            auto student_iter = ssn_index.find(ssn);
+            eosio_assert(student_iter == ssn_index.end(), "student already exists");
 
             students.emplace(account, [&](auto& student) {
                 student.key = students.available_primary_key();
@@ -51,6 +52,40 @@ namespace CipherZ {
                     _grade.grade_num = grade_num;
                     _grade.status = 0;
                 });
+            }
+
+            //@abi action
+            void addschool(const account_name account, string name) {
+                require_auth(account);
+                schoolIndex schools(_self, _self);
+                schools.emplace(account, [&](auto& _school) {
+                    _school.account_name = account;
+                    _school.key = schools.available_primary_key();
+                    _school.name = name;
+                    _school.status = 0;
+                });
+            }
+
+            //@abi action
+            void updateschool(const account_name account, uint64_t key, string name) {
+                require_auth(account);
+                schoolIndex schools(_self, _self);
+                auto iterator = schools.find(key);
+                eosio_assert(iterator != schools.end(), "school does not exist");
+                schools.modify( iterator, _self, [&]( auto& _school) {
+                    _school.name = name;
+                });
+            }
+
+            //@abi action
+            void remschool(const account_name account, const uint64_t key) {
+                require_auth(account);
+                schoolIndex schools(_self, _self);
+                auto iterator = schools.find(key);
+                eosio_assert(iterator != schools.end(), "school does not exist");
+                auto school = (*iterator);
+                eosio_assert(school.account_name == account, "only supervisor can remove school");
+                schools.erase(iterator);
             }
 
             //@abi action
@@ -214,7 +249,8 @@ namespace CipherZ {
                 uint64_t grade;
                 uint64_t result;
 
-                uint64_t primary_key() const { return ssn; }
+                uint64_t primary_key() const { return key; }
+                uint64_t ssn_key() const { return ssn; }
                 uint64_t grade_key() const { return grade; }
                 uint64_t parent_key() const { return account_name; }
 
@@ -223,6 +259,7 @@ namespace CipherZ {
 
             typedef multi_index<N(student), student, 
             indexed_by<N(bygrade), const_mem_fun<student, uint64_t, &student::grade_key>>,
+            indexed_by<N(byssn), const_mem_fun<student, uint64_t, &student::ssn_key>>,
             indexed_by<N(byparent), const_mem_fun<student, uint64_t, &student::parent_key>>> studentMultiIndex;
     
             //@abi table grade i64
@@ -249,16 +286,17 @@ namespace CipherZ {
             //@abi table school i64
             struct school {
                 uint64_t account_name;
-                string schoolname;
+                uint64_t key;
+                string name;
                 uint64_t status;
 
-                string primary_key() const { return schoolname; }
+                uint64_t primary_key() const { return key; }
 
-                EOSLIB_SERIALIZE(school, (account_name)(schoolname)(status))
+                EOSLIB_SERIALIZE(school, (account_name)(key)(name)(status))
             };
 
             typedef multi_index<N(school), school> schoolIndex;
     };
 
-    EOSIO_ABI(Lottery, (addstudent)(addgrade)(getstudents)(getgrades)(getstudent)(getgrade)(runlottery)(remstudent)(remgrade)(updategrade)(updatestuden))
+    EOSIO_ABI(Lottery, (addstudent)(addgrade)(getstudents)(getgrades)(getstudent)(getgrade)(runlottery)(remstudent)(remgrade)(updategrade)(updatestuden)(addschool)(updateschool)(remschool))
 }
