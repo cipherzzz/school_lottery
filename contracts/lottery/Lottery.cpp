@@ -13,12 +13,12 @@ namespace CipherZ {
             Lottery(account_name self):contract(self) {}
 
             //@abi action
-            void addstudent(const account_name account, uint64_t grade, uint64_t ssn, string firstname, string lastname) {
+            void addstudent(const account_name account, uint64_t gradefk, uint64_t ssn, string firstname, string lastname) {
             require_auth(account);
             
             // Grade logic
             gradeMultiIndex grades(_self, _self);
-            auto grade_iter = grades.find(grade);
+            auto grade_iter = grades.find(gradefk);
             eosio_assert(grade_iter != grades.end(), "Grade must exist before adding a student");
 
             // Student insertion
@@ -33,20 +33,20 @@ namespace CipherZ {
                 student.ssn = ssn;
                 student.firstname = firstname;
                 student.lastname = lastname;
-                student.grade = grade;
+                student.gradefk = gradefk;
             });
 
             }
 
             //@abi action
-            void addgrade(const account_name account,uint64_t school, uint64_t grade_num, uint64_t openings) {
+            void addgrade(const account_name account, uint64_t schoolfk, uint64_t grade_num, uint64_t openings) {
                 require_auth(account);
                 gradeMultiIndex grades(_self, _self);
                 auto iterator = grades.find(grade_num);
                 eosio_assert(iterator == grades.end(), "grade already exists");
                 grades.emplace(account, [&](auto& _grade) {
                     _grade.key = grades.available_primary_key();
-                    _grade.school = school;
+                    _grade.schoolfk = schoolfk;
                     _grade.account_name = account;
                     _grade.openings = openings;
                     _grade.grade_num = grade_num;
@@ -100,7 +100,7 @@ namespace CipherZ {
             }
 
             //@abi action
-            void updatestuden(const account_name account, uint64_t key, uint64_t ssn, string firstname, string lastname, uint64_t grade) {
+            void updatestuden(const account_name account, uint64_t key, uint64_t ssn, string firstname, string lastname, uint64_t gradefk) {
                 require_auth(account);
                  // Student insertion
                 studentMultiIndex students(_self, _self);
@@ -110,25 +110,9 @@ namespace CipherZ {
                 students.modify( student_iter, _self, [&]( auto& student) {
                     student.firstname = firstname;
                     student.lastname = lastname;
-                    student.grade = grade;
+                    student.gradefk = gradefk;
                     student.ssn = ssn;
                 });
-            }
-
-            //@abi action
-            void getstudent(const account_name account, const uint64_t key) {
-                require_auth(account);
-                studentMultiIndex students(_self, _self);
-                auto iterator = students.find(key);
-                eosio_assert(iterator != students.end(), "student not found");
-                auto student = students.get(key);
-                eosio_assert(student.account_name == account, "only parent can view student");
-                print(" **SSN: ", student.ssn, 
-                    " Key: ", student.key,
-                    " First Name: ", student.firstname.c_str(), 
-                    " Last Name: ", student.lastname.c_str(),
-                    " Grade: ", student.grade,
-                    " Result: ", student.result, "** ");
             }
 
             //@abi action
@@ -144,7 +128,7 @@ namespace CipherZ {
                 // Grade logic
                 gradeMultiIndex grades(_self, _self);
                 auto grade_index = grades.template get_index<N(bygrade)>();
-                auto grade_iter = grade_index.find(student.grade);
+                auto grade_iter = grade_index.find(student.gradefk);
 
                 students.erase(iterator);
 
@@ -162,52 +146,6 @@ namespace CipherZ {
             }
 
             //@abi action
-            void getgrade(const account_name account, uint64_t key) {
-                require_auth(account);
-                gradeMultiIndex grades(_self, _self);
-                auto iterator = grades.find(key);
-                eosio_assert(iterator != grades.end(), "key does not exist");
-                auto current_grade = (*iterator);
-                print(" **Grade: ", current_grade.grade_num,
-                        " Account: ", current_grade.account_name, 
-                        " Openings: ", current_grade.openings, "** ");
-            }
-
-            //@abi action
-            void getstudents(const account_name account) {
-                require_auth(account);
-                studentMultiIndex students(_self, _self);
-                auto iterator = students.begin();
-                eosio_assert(iterator != students.end(), "no students exists");
-                while (iterator != students.end()) {
-                    auto student = (*iterator);
-                    print(" First Name: ", student.firstname.c_str(), 
-                        " Last Name: ", student.lastname.c_str(),
-                        " Grade: ", student.grade,
-                        " Key: ", student.key,
-                        " Result: ", student.result, "** ");
-                    iterator++;
-                }
-            }
-
-            //@abi action
-            void getgrades(const account_name account, uint64_t school) {
-                require_auth(account);
-                gradeMultiIndex grades(_self, _self);
-                auto school_index = grades.template get_index<N(byschool)>();
-                auto school_iterator = school_index.find(school);
-                while (school_iterator != school_index.end()) {
-                    auto current_grade = (*school_iterator);
-                    print(" **Grade: ", current_grade.grade_num, 
-                    " Key: ", current_grade.key,
-                    " School: ", current_grade.school,
-                    " Status: ", current_grade.status,
-                        " Openings: ", current_grade.openings, "** ");
-                    school_iterator++;
-                }
-            }
-
-            //@abi action
             void runlottery(account_name account, uint64_t school) {
                 require_auth(account);
                 studentMultiIndex students(_self, _self);
@@ -221,7 +159,7 @@ namespace CipherZ {
                     uint64_t result_index = 1;
                     while (student_iter != student_index.end()) {
                         auto current_student = (*student_iter);
-                        if(current_student.grade == current_grade) {
+                        if(current_student.gradefk == current_grade) {
                             student_index.modify(student_iter, account, [&](auto& student) {
                             student.result = result_index;
                         });
@@ -246,15 +184,15 @@ namespace CipherZ {
                 uint64_t ssn;
                 string firstname;
                 string lastname;
-                uint64_t grade;
+                uint64_t gradefk;
                 uint64_t result;
 
                 uint64_t primary_key() const { return key; }
                 uint64_t ssn_key() const { return ssn; }
-                uint64_t grade_key() const { return grade; }
+                uint64_t grade_key() const { return gradefk; }
                 uint64_t parent_key() const { return account_name; }
 
-                EOSLIB_SERIALIZE(student, (account_name)(key)(ssn)(firstname)(lastname)(grade)(result));
+                EOSLIB_SERIALIZE(student, (account_name)(key)(ssn)(firstname)(lastname)(gradefk)(result));
             };
 
             typedef multi_index<N(student), student, 
@@ -266,16 +204,16 @@ namespace CipherZ {
             struct grade {
                 uint64_t account_name;
                 uint64_t key;
-                uint64_t school;
+                uint64_t schoolfk;
                 uint64_t grade_num;
                 uint64_t openings;
                 uint64_t status;
 
                 uint64_t primary_key() const { return key; }
                 uint64_t grade_key() const { return grade_num; }
-                uint64_t school_key() const { return school; }
+                uint64_t school_key() const { return schoolfk; }
 
-                EOSLIB_SERIALIZE(grade, (account_name)(key)(school)(grade_num)(openings)(status))
+                EOSLIB_SERIALIZE(grade, (account_name)(key)(schoolfk)(grade_num)(openings)(status))
             };
 
             // typedef multi_index<N(key), key> gradeMultiIndex;
@@ -298,5 +236,5 @@ namespace CipherZ {
             typedef multi_index<N(school), school> schoolIndex;
     };
 
-    EOSIO_ABI(Lottery, (addstudent)(addgrade)(getstudents)(getgrades)(getstudent)(getgrade)(runlottery)(remstudent)(remgrade)(updategrade)(updatestuden)(addschool)(updateschool)(remschool))
+    EOSIO_ABI(Lottery, (addstudent)(addgrade)(runlottery)(remstudent)(remgrade)(updategrade)(updatestuden)(addschool)(updateschool)(remschool))
 }
