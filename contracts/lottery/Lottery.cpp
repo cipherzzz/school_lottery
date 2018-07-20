@@ -41,9 +41,28 @@ namespace CipherZ {
             //@abi action
             void addgrade(const account_name account, uint64_t schoolfk, uint64_t grade_num, uint64_t openings) {
                 require_auth(account);
+
+                // School logic
+                schoolIndex schools(_self, _self);
+                auto school_iter = schools.find(schoolfk);
+                eosio_assert(school_iter != schools.end(), "School must exist before adding a grade");
+
+
+                // Get Grades
                 gradeMultiIndex grades(_self, _self);
-                auto iterator = grades.find(grade_num);
-                eosio_assert(iterator == grades.end(), "grade already exists");
+                auto grade_index = grades.template get_index<N(bygrade)>();
+                auto iterator = grade_index.find(grade_num);
+
+                // Verify Grade does not exist
+                while(iterator != grade_index.end()) {
+                    auto grade = (*iterator);
+                    auto exists = grade.grade_num == grade_num && grade.schoolfk == schoolfk 
+                    && name{account} == name{grade.account_name};
+                    eosio_assert(!exists, "grade already exists");
+                    iterator++;
+                }
+
+                // Do the insert
                 grades.emplace(account, [&](auto& _grade) {
                     _grade.key = grades.available_primary_key();
                     _grade.schoolfk = schoolfk;

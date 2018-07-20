@@ -10,7 +10,7 @@ import './App.css'
 
 import School from './School'
 import Parent from './Parent'
-import Headmaster from './Headmaster'
+import Grade from './Grade'
 
 const network = {
   protocol:'http',
@@ -32,11 +32,13 @@ class App extends Component {
       eos: null,
       account: null,
       identity: null,
-      grades: [],
+      schools: [],
       children: [],
       child: null,
       error: null,
-      userType: -1 //-1 is unauthorized, 0 is superintendant, 1 is parent
+      userType: -1, //-1 is unauthorized, 0 is superintendant, 1 is parent
+      gradeActionType: -1, //-1 is none, 0 is add, 1 is edit
+      selectedSchool: null
     }
   }
 
@@ -49,21 +51,19 @@ class App extends Component {
 
       const eos = scatter.eos( network, Eos, eosOptions, "http")
       this.setState({eos})
-      this.getGrades(eos)
-      this.getChildren()
+      this.getSchools(eos)
   })
   }
 
-  getGrades(eos) {
+  getSchools(eos) {
     eos.getTableRows({
       "json": true,
-      "scope": 'lottery.code',
+      "scope": "lottery.code",
       "code": 'lottery.code',
-      "table": "grade",
-      "limit": 13
+      "table": "school"
     }).then(result => {
       console.log(result)
-      this.setState({grades: result.rows})
+      this.setState({schools: result.rows})
     }).catch((error) =>{
       this.setState(error)
     })
@@ -133,31 +133,31 @@ class App extends Component {
     this.setState({child})
   }
 
-  saveGrade(grade) {
+  saveGrade(school, gradeInfo) {
+    console.log(school.key, gradeInfo.grade_num, gradeInfo.openings)
     const account = this.state.account
     this.state.eos.contract('lottery.code').then(contract => {
             const options = { authorization: [ account.name+'@'+account.authority ] };
-            // void addgrade(const account_name account, uint64_t grade_num, uint64_t openings) {
             contract
-            .addgrade(account.name, grade.grade_num, grade.openings, options)
+            .addgrade(account.name, school.key, Number(gradeInfo.grade_num), Number(gradeInfo.openings), options)
             .then(() => { 
-              this.getGrades(this.state.eos)
-              this.setGrade(null)  
+              // this.getGrades()
+              // this.setGrade(null)  
             })
             .catch(error => console.log("caught addgrade error: "+error))
           }).catch(error => console.log(error));
   }
 
-  updateGrade(grade) {
+  updateGrade(grade, gradeInfo) {
+    console.log(grade.key, gradeInfo.openings)
     const account = this.state.account
     this.state.eos.contract('lottery.code').then(contract => {
             const options = { authorization: [ account.name+'@'+account.authority ] };
-            // void updategrade(const account_name account, uint64_t grade_num, uint64_t openings) {
             contract
-            .updategrade(account.name, grade.grade_num, grade.openings, options)
+            .updategrade(account.name, grade.key, gradeInfo.openings, options)
             .then(() => { 
-              this.getGrades(this.state.eos)
-              this.setGrade(null)  
+              // this.getGrades()
+              // this.setGrade(null)  
             })
             .catch(error => console.log("caught updategrade error: "+error))
           }).catch(error => console.log(error));
@@ -171,7 +171,7 @@ class App extends Component {
             contract
             .remgrade(account.name, grade.grade_num, options)
             .then(() => { 
-              this.getGrades(this.state.eos)
+              this.getGrades()
               this.setGrade(null) 
             })
             .catch(error => console.log("caught remgrade error: "+error))
@@ -179,8 +179,18 @@ class App extends Component {
   }
 
   setGrade(grade) {
+    console.log(JSON.stringify(grade))
     this.setState({grade})
   }
+
+  editGrade(grade) {
+    this.setState({grade, gradeActionType: 1})
+  }
+
+  addGrade(grade) {
+    this.setState({grade, gradeActionType: 0})
+  }
+
 
   runLottery(){
     const account = this.state.account
@@ -189,7 +199,7 @@ class App extends Component {
             contract
             .runlottery(account.name, options)
             .then(() => { 
-              this.getGrades(this.state.eos)
+              this.getGrades()
               this.getChildren()
               this.setGrade(null) 
               this.setChild(null) 
@@ -292,15 +302,12 @@ class App extends Component {
       )
     } else if(this.state.userType === 0) {
       return (
-      <Headmaster 
-        account={this.state.account} 
-        identity={this.state.identity}
-        grades={this.state.grades}
+      <Grade 
+        updateType={this.state.gradeActionType}
         grade={this.state.grade}
-        onSave={(grade)=>{this.saveGrade(grade)}}
-        onUpdate={(grade)=>{this.updateGrade(grade)}}
+        onSave={(gradeInfo)=>{this.saveGrade(this.state.selectedSchool, gradeInfo)}}
+        onUpdate={(grade, gradeInfo)=>{this.updateGrade(grade, gradeInfo)}}
         onDelete={(grade)=>{this.deleteGrade(grade)}}
-        onSelectGrade={(grade)=>{this.setGrade(grade)}}
         />
       )
     } else {
@@ -331,6 +338,78 @@ class App extends Component {
     }
   }
 
+  renderSchool(school) {
+
+    let actionView = null
+        if(this.state.userType === 0) {
+            actionView = <div>
+            <button
+                    className="pure-button pure-button-xsmall"
+                    onClick={()=>{this.setState({selectedSchool: school})}}>Edit</button> 
+            &nbsp;&nbsp;
+            <button
+                    className="pure-button pure-button-xsmall"
+                    onClick={()=>{console.log("Delete")}}>Delete</button> 
+        </div>
+        } else if(this.state.userType === 1) {
+          actionView = <button
+                    className="pure-button pure-button-xsmall"
+                    onClick={()=>{this.setState({selectedSchool: school})}}>Register</button>
+        }
+
+    let actionCell = this.state.userType === -1 ? null : <td>{actionView}</td>
+
+    return (
+      <tr key={school.key}>
+          <td>{school.name}</td>
+          <td>{school.status}</td>
+          {actionCell}
+      </tr>
+  )
+  }
+
+  renderSelectedSchool() {
+    let schoolView = null
+    if(this.state.selectedSchool) {
+      return (
+      <School
+        school={this.state.selectedSchool}
+        eos={this.state.eos}
+        isAdmin={this.state.userType === 0}
+        onEditGrade={(grade)=>{this.editGrade(grade)}}
+        onAddGrade={(grade)=>{this.addGrade(grade)}}
+      />
+      );
+    }
+    return schoolView
+  }
+
+  renderSchools() {
+
+    let schools = []
+    this.state.schools.forEach(school => {
+      schools.push(this.renderSchool(school))    
+    })
+
+    let actionHead = this.state.userType === -1 ? null : <th>Action</th>
+
+    return (
+      <table className="pure-table pure-table-horizontal">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                {actionHead}
+            </tr>
+        </thead>
+        <tbody>
+            {schools}
+        </tbody>
+      </table>
+    )
+
+  }
+ 
   render() {
 
     return (
@@ -342,11 +421,16 @@ class App extends Component {
           <div className="pure-g">
             <div className="pure-u-1-1">
               {this.renderUnauthenticated()}
-              <School name="Hogwarts" 
-                grades={this.state.grades} 
-                isAdmin={this.state.userType === 0}
-                onRunLottery={()=>{this.runLottery()}}
-              />
+              <br />
+              <div className="pure-g">
+                <div className="pure-u-1-2">
+                  <h4>Schools</h4>
+                  {this.renderSchools()}
+                  </div>
+                  <div className="pure-u-1-2">
+                    {this.renderSelectedSchool()}
+                  </div>
+                </div>
               <hr />
               {this.renderUserView()}
             </div>

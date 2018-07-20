@@ -7,23 +7,64 @@ import "./css/pure-min.css";
 
 export default class School extends Component {
 
+    constructor(props) {
+        super(props);
+        this.state = {grades: []}
+    }
+
+    componentWillMount() {
+        this.setState({grades: this.getGrades(this.props.school.key)})
+    }
+
+    getGrades(school_id) {
+        this.props.eos.getTableRows({
+          "json": true,
+          "scope": 'lottery.code',
+          "code": 'lottery.code',
+          "table": "grade",
+          "table_key": 'school_key',
+          "lower_bound": school_id,
+        }).then(result => {
+          const filteredRows = result.rows.filter((grade)=> grade.schoolfk === school_id)  
+          console.log(JSON.stringify(filteredRows))
+          this.setState({grades: filteredRows})
+        }).catch((error) =>{
+          this.setState(error)
+        })
+      }
+
     renderGrade(grade){
+
+        let actionView = null
+        if(this.props.isAdmin) {
+            actionView = <div>
+            <button
+                    className="pure-button pure-button-xsmall"
+                    onClick={()=>{this.props.onEditGrade(grade)}}>Edit 
+                    Grade</button> 
+            &nbsp;&nbsp;
+            <button
+                    className="pure-button pure-button-xsmall"
+                    onClick={()=>{console.log("Delete")}}>Delete</button> 
+        </div>
+        }
+
         return (
-            <tr key={grade.grade_num}>
+            <tr key={grade.key}>
                 <td>{grade.grade_num}</td>
                 <td>{grade.openings}</td>
-                <td>{grade.applicants}</td>
-                <td>{grade.status}</td>
+                <td>{actionView}</td>
             </tr>
         )
     }
 
-    renderLotteryButton(){
+    renderAddGrade(){
         if(this.props.isAdmin) {
             return (
                 <button
                     className="pure-button pure-button-primary"
-                    onClick={()=>{this.props.onRunLottery()}}>Run Lottery
+                    onClick={()=>{this.props.onAddGrade(this.props.grade)}}>
+                    Add Grade
                 </button>
             )
         } else {
@@ -34,21 +75,24 @@ export default class School extends Component {
     render() {
 
         let grades = []
-        this.props.grades.forEach(grade => {
+        this.state.grades && this.state.grades.forEach(grade => {
             grades.push(this.renderGrade(grade))    
         })
+        
+        if(grades.length === 0) {
+            const noGrades = <td colSpan="4">No Grades</td>
+            grades.push(noGrades)
+        }
 
         return (
-            <div>
-            <h2>School</h2>    
-            <h4>{this.props.name}</h4>    
+            <div>  
+            <h4>{this.props.school.name}</h4>    
             <table className="pure-table pure-table-horizontal">
             <thead>
                 <tr>
                     <th>Grade</th>
                     <th>Openings</th>
-                    <th>Applicants</th>
-                    <th>Status</th>
+                    <th>Action</th>
                 </tr>
             </thead>
         
@@ -57,7 +101,7 @@ export default class School extends Component {
             </tbody>
         </table>
         <br/>
-        {this.renderLotteryButton()}
+        {this.renderAddGrade()}
         </div>
         )
     }
