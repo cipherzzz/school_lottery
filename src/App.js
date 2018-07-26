@@ -82,6 +82,21 @@ class App extends Component {
       })
 }
 
+updateSchool(school, name) {
+  console.log(school.key, name)
+  const account = this.state.account
+  this.state.eos.contract('lottery.code').then(contract => {
+          const options = { authorization: [ account.name+'@'+account.authority ] };
+          contract
+          .updateschool(account.name, school.key, name, options)
+          .then(() => { 
+            // this.getGrades()
+            // this.setGrade(null)  
+          })
+          .catch(error => console.log("caught updateschool error: "+error))
+        }).catch(error => console.log(error));
+}
+
   saveChild(child) {
     const account = this.state.account
     this.state.eos.contract('lottery.code').then(contract => {
@@ -376,8 +391,10 @@ class App extends Component {
         school={this.state.selectedSchool}
         eos={this.state.eos}
         isAdmin={this.state.userType === 0}
+        onUpdateSchool={(school, name)=>{this.updateSchool(school, name)}}
         onEditGrade={(grade)=>{this.editGrade(grade)}}
         onAddGrade={(grade)=>{this.addGrade(grade)}}
+        onDeleteGrade={(grade)=>{this.deleteGrade(grade)}}
       />
       );
     }

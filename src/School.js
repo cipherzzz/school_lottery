@@ -9,7 +9,7 @@ export default class School extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {grades: []}
+        this.state = {grades: [], name: props.school.name, nameValid: true}
     }
 
     componentWillMount() {
@@ -32,6 +32,28 @@ export default class School extends Component {
           this.setState(error)
         })
       }
+    
+    isValid() {
+    if(this.state.name === '') {
+        return false
+    } else {
+        return true
+    }
+    }
+
+    onChangeName(e) {
+    this.setState({ name: e.target.value,
+        nameValid: e.target.value !== '' });
+    }  
+
+    renderRequiredField(key){
+        console.log(this.state[key])
+        if(this.state[key] === true) {
+            return <div />
+        } else {
+            return <span className="pure-form-message-inline">This is a required field.</span>
+        }
+    }
 
     renderGrade(grade){
 
@@ -45,7 +67,7 @@ export default class School extends Component {
             &nbsp;&nbsp;
             <button
                     className="pure-button pure-button-xsmall"
-                    onClick={()=>{console.log("Delete")}}>Delete</button> 
+                    onClick={()=>{this.props.onDeleteGrade(grade)}}>Delete</button> 
         </div>
         }
 
@@ -85,8 +107,22 @@ export default class School extends Component {
         }
 
         return (
-            <div>  
-            <h4>{this.props.school.name}</h4>    
+            <div>
+            <div className="pure-control-group">
+                <input id="name" type="text" placeholder="School Name"
+                    value={this.state.name}
+                    onChange={this.onChangeName.bind(this)} 
+                    />
+                    &nbsp;&nbsp;
+                <button
+                    disabled={!this.isValid()}
+                    className="pure-button pure-button-primary"
+                    onClick={()=>{this.props.onUpdateSchool(this.props.school, this.state.name)}}>
+                    Update Name
+                </button>    
+                {this.renderRequiredField("nameValid")}
+            </div>
+            <br />        
             <table className="pure-table pure-table-horizontal">
             <thead>
                 <tr>

@@ -5,6 +5,7 @@ cleos push action lottery.code addschool '["admin","Park Road"]' -p admin@active
 cleos push action lottery.code addschool '["admin","Sedgefield"]' -p admin@active
 
 cleos push action lottery.code addgrade '["admin",0, 1, 30]' -p admin@active
+cleos push action lottery.code addgrade '["admin",0, 3, 30]' -p admin@active
 cleos push action lottery.code addgrade '["admin",0, 4, 34]' -p admin@active
 
 cleos push action lottery.code addgrade '["admin",1, 2, 32]' -p admin@active

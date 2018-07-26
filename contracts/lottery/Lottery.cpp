@@ -53,9 +53,11 @@ namespace CipherZ {
                 auto grade_index = grades.template get_index<N(bygrade)>();
                 auto iterator = grade_index.find(grade_num);
 
-                // Verify Grade does not exist
+                // Verify Grade and School
                 while(iterator != grade_index.end()) {
                     auto grade = (*iterator);
+                    auto school = (*school_iter);
+                    eosio_assert(name{account} == name{grade.account_name}, "Only the school creator can add a grade to it");
                     auto exists = grade.grade_num == grade_num && grade.schoolfk == schoolfk 
                     && name{account} == name{grade.account_name};
                     eosio_assert(!exists, "grade already exists");
