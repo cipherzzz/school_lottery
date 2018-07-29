@@ -83,6 +83,14 @@ class App extends Component {
 }
 
 updateSchool(school, name) {
+  if(school.key) {
+    this.modifySchool(school, name)
+  } else {
+    this.createSchool(name)
+  }
+}
+
+modifySchool(school, name) {
   console.log(school.key, name)
   const account = this.state.account
   this.state.eos.contract('lottery.code').then(contract => {
@@ -94,6 +102,34 @@ updateSchool(school, name) {
             // this.setGrade(null)  
           })
           .catch(error => console.log("caught updateschool error: "+error))
+        }).catch(error => console.log(error));
+}
+
+createSchool(name) {
+  const account = this.state.account
+  this.state.eos.contract('lottery.code').then(contract => {
+          const options = { authorization: [ account.name+'@'+account.authority ] };
+          contract
+          .addschool(account.name, name, options)
+          .then(() => { 
+            // this.getGrades()
+            // this.setGrade(null)  
+          })
+          .catch(error => console.log("caught createschool error: "+error))
+        }).catch(error => console.log(error));
+}
+
+deleteSchool(school) {
+  const account = this.state.account
+  this.state.eos.contract('lottery.code').then(contract => {
+          const options = { authorization: [ account.name+'@'+account.authority ] };
+          contract
+          .remschool(account.name, school.key, options)
+          .then(() => { 
+            // this.getGrades()
+            // this.setGrade(null)  
+          })
+          .catch(error => console.log("caught removeschool error: "+error))
         }).catch(error => console.log(error));
 }
 
@@ -184,7 +220,7 @@ updateSchool(school, name) {
     this.state.eos.contract('lottery.code').then(contract => {
             const options = { authorization: [ account.name+'@'+account.authority ] };
             contract
-            .remgrade(account.name, grade.grade_num, options)
+            .remgrade(account.name, grade.key, options)
             .then(() => { 
               this.getGrades()
               this.setGrade(null) 
@@ -206,6 +242,9 @@ updateSchool(school, name) {
     this.setState({grade, gradeActionType: 0})
   }
 
+  newSchool() {
+    this.setState({selectedSchool: {name: ''}})
+  }
 
   runLottery(){
     const account = this.state.account
@@ -233,7 +272,7 @@ updateSchool(school, name) {
 
   logout() {
     this.state.scatter.forgetIdentity().then(() => {
-      this.setState({userType: -1})
+      this.setState({userType: -1, selectedSchool: null, gradeActionType: -1})
   });
   }
 
@@ -364,7 +403,7 @@ updateSchool(school, name) {
             &nbsp;&nbsp;
             <button
                     className="pure-button pure-button-xsmall"
-                    onClick={()=>{console.log("Delete")}}>Delete</button> 
+                    onClick={()=>{this.deleteSchool(school)}}>Delete</button> 
         </div>
         } else if(this.state.userType === 1) {
           actionView = <button
@@ -427,6 +466,20 @@ updateSchool(school, name) {
 
   }
  
+  renderAddSchool(){
+    if(this.state.userType === 0) {
+        return (
+            <button
+                className="pure-button pure-button-primary"
+                onClick={()=>{this.newSchool()}}>
+                Add School
+            </button>
+        )
+    } else {
+        return null
+    }
+  }
+
   render() {
 
     return (
@@ -443,6 +496,8 @@ updateSchool(school, name) {
                 <div className="pure-u-1-2">
                   <h4>Schools</h4>
                   {this.renderSchools()}
+                  <br />
+                  {this.renderAddSchool()}
                   </div>
                   <div className="pure-u-1-2">
                     {this.renderSelectedSchool()}
