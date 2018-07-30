@@ -38,7 +38,8 @@ class App extends Component {
       error: null,
       userType: -1, //-1 is unauthorized, 0 is superintendant, 1 is parent
       gradeActionType: -1, //-1 is none, 0 is add, 1 is edit
-      selectedSchool: null
+      selectedSchool: null,
+      selectedGrade: null
     }
   }
 
@@ -80,6 +81,10 @@ class App extends Component {
       }).catch((error) =>{
           this.setState(error)
       })
+}
+
+manageChildren(grade) {
+  this.setState({selectedGrade: grade})
 }
 
 updateSchool(school, name) {
@@ -340,21 +345,23 @@ deleteSchool(school) {
 
 
   renderUserView() {
-    if(this.state.userType === 1) {
+    if(this.state.userType === 1 && this.state.selectedGrade) {
       return (
       <Parent 
-        children={this.state.children} 
-        grades={this.state.grades}
-        child={this.state.child}
-        account={this.state.account} 
-        identity={this.state.identity}
+        //children={this.state.children} 
+        //grades={this.state.grades}
+        //child={this.state.child}
+        eos={this.state.eos}
+        //account={this.state.account} 
+        //identity={this.state.identity}
+        grade={this.state.selectedGrade}
         onSave={(child)=>{this.saveChild(child)}}
         onUpdate={(child)=>{this.updateChild(child)}}
         onDelete={(child)=>{this.deleteChild(child)}}
         onSelectChild={(child)=>{this.setChild(child)}}
         />
       )
-    } else if(this.state.userType === 0) {
+    } else if(this.state.userType === 0 && this.state.selectedGrade) {
       return (
       <Grade 
         updateType={this.state.gradeActionType}
@@ -408,7 +415,7 @@ deleteSchool(school) {
         } else if(this.state.userType === 1) {
           actionView = <button
                     className="pure-button pure-button-xsmall"
-                    onClick={()=>{this.setState({selectedSchool: school})}}>Register</button>
+                    onClick={()=>{this.setState({selectedSchool: school})}}>Select</button>
         }
 
     let actionCell = this.state.userType === -1 ? null : <td>{actionView}</td>
@@ -430,6 +437,7 @@ deleteSchool(school) {
         school={this.state.selectedSchool}
         eos={this.state.eos}
         isAdmin={this.state.userType === 0}
+        onManageChildren={(grade)=>{this.manageChildren(grade)}}
         onUpdateSchool={(school, name)=>{this.updateSchool(school, name)}}
         onEditGrade={(grade)=>{this.editGrade(grade)}}
         onAddGrade={(grade)=>{this.addGrade(grade)}}

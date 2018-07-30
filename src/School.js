@@ -75,6 +75,10 @@ export default class School extends Component {
                     className="pure-button pure-button-xsmall"
                     onClick={()=>{this.props.onDeleteGrade(grade)}}>Delete</button> 
         </div>
+        } else {
+            actionView = <button
+                    className="pure-button pure-button-xsmall"
+                    onClick={()=>{this.props.onManageChildren(grade)}}>Manage</button>
         }
 
         return (
@@ -102,24 +106,28 @@ export default class School extends Component {
     }
 
     renderName() {
-        const isNew = this.props.school.key === undefined
-        const buttonName = isNew ? 'Create School' : 'Update Name'
-        return (
-            <div className="pure-control-group">
-                <input id="name" type="text" placeholder="School Name"
-                    value={this.state.name}
-                    onChange={this.onChangeName.bind(this)} 
-                    />
-                    &nbsp;&nbsp;
-                <button
-                    disabled={!this.isValid()}
-                    className="pure-button pure-button-primary"
-                    onClick={()=>{this.props.onUpdateSchool(this.props.school, this.state.name)}}>
-                    {buttonName}
-                </button>    
-                {this.renderRequiredField("nameValid")}
-            </div>
-        )
+        if(this.props.isAdmin) {
+            const isNew = this.props.school.key === undefined
+            const buttonName = isNew ? 'Create School' : 'Update Name'
+            return (
+                <div className="pure-control-group">
+                    <input id="name" type="text" placeholder="School Name"
+                        value={this.state.name}
+                        onChange={this.onChangeName.bind(this)} 
+                        />
+                        &nbsp;&nbsp;
+                    <button
+                        disabled={!this.isValid()}
+                        className="pure-button pure-button-primary"
+                        onClick={()=>{this.props.onUpdateSchool(this.props.school, this.state.name)}}>
+                        {buttonName}
+                    </button>    
+                    {this.renderRequiredField("nameValid")}
+                </div>
+            )
+        } else {
+            return <h4>{this.state.name}</h4>
+        }
     }
 
     render() {
@@ -136,8 +144,7 @@ export default class School extends Component {
 
         return (
             <div>
-            {this.renderName()}
-            <br />        
+            {this.renderName()}       
             <table className="pure-table pure-table-horizontal">
             <thead>
                 <tr>

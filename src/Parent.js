@@ -7,38 +7,44 @@ export default class Parent extends Component {
 
     constructor(props) {
         super(props)
-        this.state = {
+        this.state = this.stateFromProps(props)
+    }
+
+    componentWillReceiveProps(newProps) {
+        if(newProps !== this.props) {
+            this.setState(this.stateFromProps(newProps))
+        }
+    }
+
+    stateFromProps(props){
+        return {
             firstName: '',
             lastName: '',
             grade: '',
             ssn: '',
-            updateType: -1
+            updateType: -1,
+            students: this.getStudents(props.grade.key)
             }
     }
 
-    componentWillReceiveProps(newProps) {
-        this.stateFromProps(newProps)
-    }
+    getStudents(grade_id) {
+        this.props.eos.getTableRows({
+          "json": true,
+          "scope": 'lottery.code',
+          "code": 'lottery.code',
+          "table": "student",
+          "table_key": 'grade_key',
+          "lower_bound": grade_id,
+        }).then(result => {
+          const filteredRows = result.rows.filter((student)=> student.gradefk === grade_id)  
+          console.log(JSON.stringify(filteredRows))
+          this.setState({students: filteredRows})
+        }).catch((error) =>{
+          this.setState(error)
+        })
+      }
 
-    stateFromProps(props){
-        if(props.child) {
-            this.setState({
-                firstName: props.child.firstname,
-                lastName: props.child.lastname,
-                grade: props.child.grade,
-                ssn: props.child.ssn,
-                })
-        } else {
-            this.setState({
-                firstName: "",
-                lastName: "",
-                grade: "",
-                ssn: "",
-                })
-        }
-    }
-
-    childFromState(){
+    studentFromState(){
         return {
             firstname: this.state.firstName,
             lastname: this.state.lastName,
@@ -83,13 +89,13 @@ export default class Parent extends Component {
 
     onSave() {
         if(this.isValid()) {
-            this.props.onSave(this.childFromState())
+            this.props.onSave(this.studentFromState())
         } 
     }
 
     onUpdate() {
         if(this.isValid()) {
-            this.props.onUpdate(this.childFromState())
+            this.props.onUpdate(this.studentFromState())
         } 
     }
 
@@ -104,7 +110,7 @@ export default class Parent extends Component {
     }
 
 
-    renderChild(child){
+    renderStudent(child){
         let actionView = <td>
             <button
                     className="pure-button pure-button-small"
@@ -144,7 +150,7 @@ export default class Parent extends Component {
         }
     }
 
-    renderChildForm() {
+    renderStudentForm() {
         if(this.state.updateType === -1) {
             return <div />
         } else  {
@@ -228,37 +234,13 @@ export default class Parent extends Component {
     render() {
 
         let children = []
-        let data = this.props.children ? this.props.children : []
+        let data = this.state.students ? this.state.students : []
         data.forEach(child => {
-            children.push(this.renderChild(child))    
+            children.push(this.renderStudent(child))    
         })
 
         return (
         <div>    
-        <h2>Parent</h2>
-        <table className="pure-table pure-table-horizontal">
-            <thead>
-                <tr>
-                    <th>First</th>
-                    <th>Last</th>
-                    <th>Address</th>
-                    <th>City</th>
-                    <th>State</th>
-                    <th>Zip</th>
-                </tr>
-            </thead>
-        
-            <tbody>
-                <tr>
-                    <td>{this.props.identity.personal.firstname}</td>
-                    <td>{this.props.identity.personal.lastname}</td>
-                    <td>{this.props.identity.location.address}</td>
-                    <td>{this.props.identity.location.city}</td>
-                    <td>{this.props.identity.location.state}</td>
-                    <td>{this.props.identity.location.zipcode}</td>
-                </tr>
-            </tbody>
-        </table>
         <h2>Students</h2>
         <table className="pure-table pure-table-horizontal">
             <thead>
@@ -284,7 +266,7 @@ export default class Parent extends Component {
         <br />
         <hr />
         <br /> 
-        {this.renderChildForm()}                 
+        {this.renderStudentForm()}                 
         </div>
         )
     }
