@@ -8,9 +8,9 @@ export default class Grade extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            grade: '',
-            openings: '',
-            applicants: '',
+            grade: props.grade.grade_num,
+            openings: props.grade.openings,
+            applicants: props.grade.applicants
             }
     }
 

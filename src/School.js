@@ -110,19 +110,22 @@ export default class School extends Component {
             const isNew = this.props.school.key === undefined
             const buttonName = isNew ? 'Create School' : 'Update Name'
             return (
-                <div className="pure-control-group">
-                    <input id="name" type="text" placeholder="School Name"
-                        value={this.state.name}
-                        onChange={this.onChangeName.bind(this)} 
-                        />
-                        &nbsp;&nbsp;
-                    <button
-                        disabled={!this.isValid()}
-                        className="pure-button pure-button-primary"
-                        onClick={()=>{this.props.onUpdateSchool(this.props.school, this.state.name)}}>
-                        {buttonName}
-                    </button>    
-                    {this.renderRequiredField("nameValid")}
+                <div>
+                    <div className="pure-control-group">
+                        <input id="name" type="text" placeholder="School Name"
+                            value={this.state.name}
+                            onChange={this.onChangeName.bind(this)} 
+                            />
+                            &nbsp;&nbsp;
+                        <button
+                            disabled={!this.isValid()}
+                            className="pure-button pure-button-primary"
+                            onClick={()=>{this.props.onUpdateSchool(this.props.school, this.state.name)}}>
+                            {buttonName}
+                        </button>    
+                        {this.renderRequiredField("nameValid")}
+                    </div>
+                    <br/>
                 </div>
             )
         } else {

@@ -237,15 +237,15 @@ deleteSchool(school) {
 
   setGrade(grade) {
     console.log(JSON.stringify(grade))
-    this.setState({grade})
+    this.setState({selectedGrade: grade})
   }
 
   editGrade(grade) {
-    this.setState({grade, gradeActionType: 1})
+    this.setState({selectedGrade: grade, gradeActionType: 1})
   }
 
   addGrade(grade) {
-    this.setState({grade, gradeActionType: 0})
+    this.setState({selectedGrade: grade, gradeActionType: 0})
   }
 
   newSchool() {
@@ -346,6 +346,7 @@ deleteSchool(school) {
 
 
   renderUserView() {
+    console.log(this.state.userType, this.state.selectedGrade)
     if(this.state.userType === 1 && this.state.selectedGrade) {
       return (
       <Parent 
@@ -363,7 +364,7 @@ deleteSchool(school) {
       return (
       <Grade 
         updateType={this.state.gradeActionType}
-        grade={this.state.grade}
+        grade={this.state.selectedGrade}
         onSave={(gradeInfo)=>{this.saveGrade(this.state.selectedSchool, gradeInfo)}}
         onUpdate={(grade, gradeInfo)=>{this.updateGrade(grade, gradeInfo)}}
         onDelete={(grade)=>{this.deleteGrade(grade)}}
