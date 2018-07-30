@@ -33,13 +33,12 @@ class App extends Component {
       account: null,
       identity: null,
       schools: [],
-      children: [],
-      child: null,
       error: null,
       userType: -1, //-1 is unauthorized, 0 is superintendant, 1 is parent
       gradeActionType: -1, //-1 is none, 0 is add, 1 is edit
       selectedSchool: null,
-      selectedGrade: null
+      selectedGrade: null,
+      selectedChild: null
     }
   }
 
@@ -138,13 +137,14 @@ deleteSchool(school) {
         }).catch(error => console.log(error));
 }
 
-  saveChild(child) {
+  saveChild(child, grade) {
+    console.log(grade)
     const account = this.state.account
     this.state.eos.contract('lottery.code').then(contract => {
             const options = { authorization: [ account.name+'@'+account.authority ] };
             // void addstudent(const account_name account, uint64_t ssn, string firstname, string lastname, uint64_t grade) {
             contract
-            .addstudent(account.name, child.ssn, child.firstname, child.lastname, child.grade_num, options)
+            .addstudent(account.name, grade.key, child.ssn, child.firstname, child.lastname, options)
             .then(() => { 
               this.getGrades(this.state.eos)
               this.getChildren()
@@ -155,12 +155,13 @@ deleteSchool(school) {
   }
 
   updateChild(child) {
+    console.log(child.key, child.ssn, child.firstname, child.lastname, child.gradefk)
     const account = this.state.account
     this.state.eos.contract('lottery.code').then(contract => {
             const options = { authorization: [ account.name+'@'+account.authority ] };
             // void addstudent(const account_name account, uint64_t ssn, string firstname, string lastname, uint64_t grade) {
             contract
-            .updatechild(account.name, child.ssn, child.firstname, child.lastname, child.grade_num, options)
+            .updatestuden(account.name, child.key, child.ssn, child.firstname, child.lastname, child.gradefk, options)
             .then(() => { 
               this.getGrades(this.state.eos)
               this.getChildren()
@@ -175,7 +176,7 @@ deleteSchool(school) {
     this.state.eos.contract('lottery.code').then(contract => {
             const options = { authorization: [ account.name+'@'+account.authority ] };
             contract
-            .remstudent(account.name, child.ssn, options)
+            .remstudent(account.name, child.key, options)
             .then(() => { 
               this.getGrades(this.state.eos)
               this.getChildren()
@@ -186,7 +187,7 @@ deleteSchool(school) {
   }
 
   setChild(child) {
-    this.setState({child})
+    this.setState({selectedChild: child})
   }
 
   saveGrade(school, gradeInfo) {
@@ -348,14 +349,11 @@ deleteSchool(school) {
     if(this.state.userType === 1 && this.state.selectedGrade) {
       return (
       <Parent 
-        //children={this.state.children} 
-        //grades={this.state.grades}
-        //child={this.state.child}
         eos={this.state.eos}
-        //account={this.state.account} 
-        //identity={this.state.identity}
+        school={this.state.selectedSchool}
         grade={this.state.selectedGrade}
-        onSave={(child)=>{this.saveChild(child)}}
+        child={this.state.selectedChild}
+        onSave={(child, grade)=>{this.saveChild(child, grade)}}
         onUpdate={(child)=>{this.updateChild(child)}}
         onDelete={(child)=>{this.deleteChild(child)}}
         onSelectChild={(child)=>{this.setChild(child)}}
