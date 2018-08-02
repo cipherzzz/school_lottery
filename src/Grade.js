@@ -1,17 +1,25 @@
 import React, { Component } from "react";
 
-import "./App.css";
+import "./app.css";
 import "./css/pure-min.css";
 
 export default class Grade extends Component {
 
     constructor(props) {
         super(props)
-        this.state = {
-            grade: props.grade.grade_num,
-            openings: props.grade.openings,
-            applicants: props.grade.applicants
-            }
+        if(props.grade) {
+            this.state = {
+                grade: props.grade.grade_num,
+                openings: props.grade.openings,
+                applicants: props.grade.applicants
+                }
+        } else {
+            this.state = {
+                grade: '',
+                openings: '',
+                applicants: ''
+                }
+        }
     }
 
     componentWillReceiveProps(newProps) {
@@ -174,6 +182,7 @@ export default class Grade extends Component {
     }
 
     render() {
+        console.log("grade render:"+this.props.updateType)
         if(this.props.updateType === -1) {
             return <div/>
         } else {

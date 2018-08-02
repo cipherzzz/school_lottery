@@ -1,16 +1,15 @@
 import React, { Component } from 'react'
 import Eos from 'eosjs'
-//import SimpleStorageContract from '../build/contracts/SimpleStorage.json'
-//import getWeb3 from './utils/getWeb3'
 
 import './css/oswald.css'
 import './css/open-sans.css'
 import './css/pure-min.css'
-import './App.css'
+import './app.css'
 
-import School from './School'
-import Parent from './Parent'
-import Grade from './Grade'
+import School from './school'
+import Student from './student'
+import Grade from './grade'
+import Network from "./network"
 
 const network = {
   protocol:'http',
@@ -38,7 +37,7 @@ class App extends Component {
       gradeActionType: -1, //-1 is none, 0 is add, 1 is edit
       selectedSchool: null,
       selectedGrade: null,
-      selectedChild: null
+      selectedStudent: null
     }
   }
 
@@ -51,188 +50,67 @@ class App extends Component {
 
       const eos = scatter.eos( network, Eos, eosOptions, "http")
       this.setState({eos})
-      this.getSchools(eos)
+      this.network = new Network(eos)
+      this.network.init()
+
+      this.getSchools()
   })
   }
 
-  getSchools(eos) {
-    eos.getTableRows({
-      "json": true,
-      "scope": "lottery.code",
-      "code": 'lottery.code',
-      "table": "school"
-    }).then(result => {
-      console.log(result)
-      this.setState({schools: result.rows})
-    }).catch((error) =>{
-      this.setState(error)
-    })
+  async getSchools() {
+    this.setState({schools: await this.network.getSchools()})
   }
 
-  getChildren() {
-    this.state.eos.getTableRows({
-        "json": true,
-        "scope": 'lottery.code',
-        "code": 'lottery.code',
-        "table": "student",
-      }).then(result => {
-          this.setState({children: result.rows})
-      }).catch((error) =>{
-          this.setState(error)
-      })
-}
-
-manageChildren(grade) {
-  this.setState({selectedGrade: grade})
-}
-
-updateSchool(school, name) {
-  if(school.key) {
-    this.modifySchool(school, name)
-  } else {
-    this.createSchool(name)
-  }
-}
-
-modifySchool(school, name) {
-  console.log(school.key, name)
-  const account = this.state.account
-  this.state.eos.contract('lottery.code').then(contract => {
-          const options = { authorization: [ account.name+'@'+account.authority ] };
-          contract
-          .updateschool(account.name, school.key, name, options)
-          .then(() => { 
-            // this.getGrades()
-            // this.setGrade(null)  
-          })
-          .catch(error => console.log("caught updateschool error: "+error))
-        }).catch(error => console.log(error));
-}
-
-createSchool(name) {
-  const account = this.state.account
-  this.state.eos.contract('lottery.code').then(contract => {
-          const options = { authorization: [ account.name+'@'+account.authority ] };
-          contract
-          .addschool(account.name, name, options)
-          .then(() => { 
-            // this.getGrades()
-            // this.setGrade(null)  
-          })
-          .catch(error => console.log("caught createschool error: "+error))
-        }).catch(error => console.log(error));
-}
-
-deleteSchool(school) {
-  const account = this.state.account
-  this.state.eos.contract('lottery.code').then(contract => {
-          const options = { authorization: [ account.name+'@'+account.authority ] };
-          contract
-          .remschool(account.name, school.key, options)
-          .then(() => { 
-            // this.getGrades()
-            // this.setGrade(null)  
-          })
-          .catch(error => console.log("caught removeschool error: "+error))
-        }).catch(error => console.log(error));
-}
-
-  saveChild(child, grade) {
-    console.log(grade)
-    const account = this.state.account
-    this.state.eos.contract('lottery.code').then(contract => {
-            const options = { authorization: [ account.name+'@'+account.authority ] };
-            // void addstudent(const account_name account, uint64_t ssn, string firstname, string lastname, uint64_t grade) {
-            contract
-            .addstudent(account.name, grade.key, child.ssn, child.firstname, child.lastname, options)
-            .then(() => { 
-              this.getGrades(this.state.eos)
-              this.getChildren()
-              this.setChild(null)  
-            })
-            .catch(error => console.log("caught addstudent error: "+error))
-          }).catch(error => console.log(error));
+  modifySchool(school, name) {
+    this.network.modifySchool(school, name)
   }
 
-  updateChild(child) {
-    console.log(child.key, child.ssn, child.firstname, child.lastname, child.gradefk)
-    const account = this.state.account
-    this.state.eos.contract('lottery.code').then(contract => {
-            const options = { authorization: [ account.name+'@'+account.authority ] };
-            // void addstudent(const account_name account, uint64_t ssn, string firstname, string lastname, uint64_t grade) {
-            contract
-            .updatestuden(account.name, child.key, child.ssn, child.firstname, child.lastname, child.gradefk, options)
-            .then(() => { 
-              this.getGrades(this.state.eos)
-              this.getChildren()
-              this.setChild(null)  
-            })
-            .catch(error => console.log("caught updatestudent error: "+error))
-          }).catch(error => console.log(error));
+  createSchool(name) {
+    this.network.createSchool(name)
   }
 
-  deleteChild(child) {
-    const account = this.state.account
-    this.state.eos.contract('lottery.code').then(contract => {
-            const options = { authorization: [ account.name+'@'+account.authority ] };
-            contract
-            .remstudent(account.name, child.key, options)
-            .then(() => { 
-              this.getGrades(this.state.eos)
-              this.getChildren()
-              this.setChild(null) 
-            })
-            .catch(error => console.log("caught remstudent error: "+error))
-          }).catch(error => console.log(error));
+  deleteSchool(school) {
+    this.network.deleteSchool(school)
   }
 
-  setChild(child) {
-    this.setState({selectedChild: child})
+  saveStudent(student, grade) {
+    this.network.saveStudent(student, grade)
+  }
+
+  updateStudent(student) {
+    this.network.updateStudent(student)
+  }
+
+  deleteStudent(student) {
+    this.network.deleteStudent(student)
   }
 
   saveGrade(school, gradeInfo) {
-    console.log(school.key, gradeInfo.grade_num, gradeInfo.openings)
-    const account = this.state.account
-    this.state.eos.contract('lottery.code').then(contract => {
-            const options = { authorization: [ account.name+'@'+account.authority ] };
-            contract
-            .addgrade(account.name, school.key, Number(gradeInfo.grade_num), Number(gradeInfo.openings), options)
-            .then(() => { 
-              // this.getGrades()
-              // this.setGrade(null)  
-            })
-            .catch(error => console.log("caught addgrade error: "+error))
-          }).catch(error => console.log(error));
+    this.network.saveGrade(school, gradeInfo)
   }
 
   updateGrade(grade, gradeInfo) {
-    console.log(grade.key, gradeInfo.openings)
-    const account = this.state.account
-    this.state.eos.contract('lottery.code').then(contract => {
-            const options = { authorization: [ account.name+'@'+account.authority ] };
-            contract
-            .updategrade(account.name, grade.key, gradeInfo.openings, options)
-            .then(() => { 
-              // this.getGrades()
-              // this.setGrade(null)  
-            })
-            .catch(error => console.log("caught updategrade error: "+error))
-          }).catch(error => console.log(error));
+    this.network.updateGrade(grade, gradeInfo)
   }
 
   deleteGrade(grade) {
-    const account = this.state.account
-    // void remgrade(const account_name account, const uint64_t grade_num) {
-    this.state.eos.contract('lottery.code').then(contract => {
-            const options = { authorization: [ account.name+'@'+account.authority ] };
-            contract
-            .remgrade(account.name, grade.key, options)
-            .then(() => { 
-              this.getGrades()
-              this.setGrade(null) 
-            })
-            .catch(error => console.log("caught remgrade error: "+error))
-          }).catch(error => console.log(error));
+    this.network.deleteGrade(grade)
+  }
+
+  setStudent(student) {
+    this.setState({selectedStudent: student})
+  }
+
+  manageStudents(grade) {
+    this.setState({selectedGrade: grade})
+  }
+  
+  updateSchool(school, name) {
+    if(school.key !== undefined) {
+      this.modifySchool(school, name)
+    } else {
+      this.createSchool(name)
+    }
   }
 
   setGrade(grade) {
@@ -250,22 +128,6 @@ deleteSchool(school) {
 
   newSchool() {
     this.setState({selectedSchool: {name: ''}})
-  }
-
-  runLottery(){
-    const account = this.state.account
-    this.state.eos.contract('lottery.code').then(contract => {
-            const options = { authorization: [ account.name+'@'+account.authority ] };
-            contract
-            .runlottery(account.name, options)
-            .then(() => { 
-              this.getGrades()
-              this.getChildren()
-              this.setGrade(null) 
-              this.setChild(null) 
-            })
-            .catch(error => console.log("caught runlottery error: "+error))
-          }).catch(error => console.log(error));
   }
 
   authenticateParent(){
@@ -303,6 +165,7 @@ deleteSchool(school) {
       const account = identity.accounts.find(acc=>acc.blockchain==='eos'); 
 
       if(account) {
+        this.network.setAccount(account)
         this.setState({account})
         // We have a valid identity - now we set the user's requested type
         if(isParent === true) {
@@ -329,9 +192,7 @@ deleteSchool(school) {
         <div>
           <a href="#" className="pure-menu-heading pure-menu-link">School Lottery</a>
           <a onClick={this.authenticateParent.bind(this)} style={{float: "right", cursor: "pointer"}} className="pure-menu-heading pure-menu-button">Login as Parent</a>
-          {/* <button onClick={this.authenticateParent.bind(this)}>Authenticate as Parent with Scatter</button> */}
           <a onClick={this.authenticateSuperintendent.bind(this)} style={{float: "right", cursor: "pointer"}} className="pure-menu-heading pure-menu-button">Login as Admin</a>
-          {/* <button onClick={this.authenticateSuperintendent.bind(this)}>Authenticate as Superintendent with Scatter</button> */}
         </div>  
       )
     } else {
@@ -339,6 +200,7 @@ deleteSchool(school) {
         <div>
           <a href="#" className="pure-menu-heading pure-menu-link">School Lottery</a>
           <a onClick={this.logout.bind(this)} style={{float: "right", cursor: "pointer"}} className="pure-menu-heading pure-menu-button">Logout</a>
+          <div style={{float: "right", color: 'white'}} className="pure-menu-heading pure-menu-button"><i>{this.state.identity.personal.firstname + " " + this.state.identity.personal.lastname}</i></div>
         </div>
       )
     }
@@ -346,21 +208,22 @@ deleteSchool(school) {
 
 
   renderUserView() {
-    console.log(this.state.userType, this.state.selectedGrade)
+    console.log("render user view:"+this.state.userType, this.state.selectedGrade)
     if(this.state.userType === 1 && this.state.selectedGrade) {
       return (
-      <Parent 
+      <Student 
         eos={this.state.eos}
         school={this.state.selectedSchool}
         grade={this.state.selectedGrade}
-        child={this.state.selectedChild}
-        onSave={(child, grade)=>{this.saveChild(child, grade)}}
-        onUpdate={(child)=>{this.updateChild(child)}}
-        onDelete={(child)=>{this.deleteChild(child)}}
-        onSelectChild={(child)=>{this.setChild(child)}}
+        network={this.network}
+        student={this.state.selectedStudent}
+        onSave={(student, grade)=>{this.saveStudent(student, grade)}}
+        onUpdate={(student)=>{this.updateStudent(student)}}
+        onDelete={(student)=>{this.deleteStudent(student)}}
+        onSelectStudent={(student)=>{this.setStudent(student)}}
         />
       )
-    } else if(this.state.userType === 0 && this.state.selectedGrade) {
+    } else if(this.state.userType === 0) {
       return (
       <Grade 
         updateType={this.state.gradeActionType}
@@ -388,7 +251,7 @@ deleteSchool(school) {
                   <h3>Roles</h3>
                   <ul>
                     <li><b>Superintendent</b> - Inputs total openings per grade, runs lottery</li>
-                    <li><b>Parent</b> - Inputs parent/child information</li>
+                    <li><b>Parent</b> - Inputs parent/student information</li>
                   </ul>
                 </p>
                 </div>
@@ -433,10 +296,10 @@ deleteSchool(school) {
     if(this.state.selectedSchool) {
       return (
       <School
+        network={this.network}
         school={this.state.selectedSchool}
-        eos={this.state.eos}
         isAdmin={this.state.userType === 0}
-        onManageChildren={(grade)=>{this.manageChildren(grade)}}
+        onManageStudents={(grade)=>{this.manageStudents(grade)}}
         onUpdateSchool={(school, name)=>{this.updateSchool(school, name)}}
         onEditGrade={(grade)=>{this.editGrade(grade)}}
         onAddGrade={(grade)=>{this.addGrade(grade)}}

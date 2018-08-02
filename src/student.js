@@ -1,42 +1,42 @@
 import React, { Component } from "react";
 
-import "./App.css";
+import "./app.css";
 import "./css/pure-min.css";
 
-export default class Parent extends Component {
+export default class Student extends Component {
 
     constructor(props) {
         super(props)
-        this.state = this.stateFromProps(props)
+        this.state = {
+            firstName: '',
+            lastName: '',
+            grade: '',
+            ssn: '',
+            students: []
+        }
+    }
+
+    componentWillMount() {
+        this.setState(this.stateFromProps(this.props))
+        this.getStudents(this.props.grade.key)
     }
 
     componentWillReceiveProps(newProps) {
         if(newProps !== this.props) {
             this.setState(this.stateFromProps(newProps))
+            this.getStudents(newProps.grade.key)
         }
     }
 
-    stateFromProps(props){
-        return {
-            ...this.stateFromStudent(props.child),
-            ...{students: this.getStudents(props.grade.key)}
-            }
+    stateFromProps(props) {
+        return this.stateFromStudent(props.student)
     }
 
-    getStudents(grade_id) {
-        this.props.eos.getTableRows({
-          "json": true,
-          "scope": 'lottery.code',
-          "code": 'lottery.code',
-          "table": "student",
-          "table_key": 'grade_key',
-        }).then(result => {
-          const filteredRows = result.rows.filter((student)=> student.gradefk === grade_id)  
-          this.setState({students: filteredRows})
-        }).catch((error) =>{
-          this.setState(error)
-        })
-      }
+    async getStudents(grade_id) {
+        const students = await this.props.network.getStudents(grade_id)
+        console.log(students, grade_id)
+        this.setState({students})
+    }
 
     studentFromState(){
         return {
@@ -44,8 +44,8 @@ export default class Parent extends Component {
             lastname: this.state.lastName,
             grade_num: this.state.grade,
             ssn: this.state.ssn,
-            gradefk: this.props.child.gradefk,
-            key: this.props.child.key
+            gradefk: this.props.grade.key,
+            key: this.props.student?this.props.student.key:undefined
         }
     }
 
@@ -115,12 +115,12 @@ export default class Parent extends Component {
 
     onAddForm() {
         this.setState({updateType: 0})
-        this.props.onSelectChild(null) 
+        this.props.onSelectStudent(null) 
     }
 
     onUpdateForm(child) {
         this.setState({updateType: 1})
-        this.props.onSelectChild(child) 
+        this.props.onSelectStudent(child) 
     }
 
 
@@ -245,9 +245,12 @@ export default class Parent extends Component {
 
         let children = []
         let data = this.state.students ? this.state.students : []
-        data.forEach(child => {
-            children.push(this.renderStudent(child))    
-        })
+        console.log(this.state)
+        if(data) {
+            data.forEach(child => {
+                children.push(this.renderStudent(child))    
+            })
+        }
 
         return (
         <div className="pure-g">    

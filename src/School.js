@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import "./App.css";
+import "./app.css";
 import "./css/pure-min.css";
 
 //<div className="pure-control-group">
@@ -13,31 +13,20 @@ export default class School extends Component {
     }
 
     componentWillMount() {
-        this.setState({grades: this.getGrades(this.props.school.key)})
+        this.getGrades(this.props.school.key)
     }
 
     componentWillReceiveProps(newProps) {
         if(newProps.school !== this.props.school) {
-            this.setState({grades: this.getGrades(newProps.school.key), name: newProps.school.name})
+            this.getGrades(this.props.school.key)
+            this.setState({name: newProps.school.name})
         }
     }
 
-    getGrades(school_id) {
-        this.props.eos.getTableRows({
-          "json": true,
-          "scope": 'lottery.code',
-          "code": 'lottery.code',
-          "table": "grade",
-          "table_key": 'school_key',
-          "lower_bound": school_id,
-        }).then(result => {
-          const filteredRows = result.rows.filter((grade)=> grade.schoolfk === school_id)  
-          console.log(JSON.stringify(filteredRows))
-          this.setState({grades: filteredRows})
-        }).catch((error) =>{
-          this.setState(error)
-        })
-      }
+    async getGrades(school_id) {
+        const grades = await this.props.network.getGrades(school_id)
+        this.setState({grades: grades})
+    }
     
     isValid() {
     if(this.state.name === '') {
@@ -78,7 +67,7 @@ export default class School extends Component {
         } else {
             actionView = <button
                     className="pure-button pure-button-xsmall"
-                    onClick={()=>{this.props.onManageChildren(grade)}}>Manage</button>
+                    onClick={()=>{this.props.onManageStudents(grade)}}>Manage</button>
         }
 
         return (
