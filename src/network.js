@@ -50,8 +50,8 @@ export default class Network {
     /* Table Data - End */    
 
 
-    async runLottery(){
-        await this.contract.runlottery(this.account.name, this.options)
+    async runLottery(school){
+        await this.contract.runlottery(this.account.name, school.key, this.options)
     }
 
     /* School */

@@ -1,6 +1,8 @@
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/print.hpp>
 #include <string>
+#include <eosiolib/transaction.hpp>
+#include <eosiolib/crypto.h>
 
 namespace CipherZ {
     using namespace eosio;
@@ -167,20 +169,39 @@ namespace CipherZ {
             }
 
             //@abi action
-            void runlottery(account_name account, uint64_t school) {
+            void runlottery(account_name account, uint64_t schoolkey) {
+                require_auth(account);
+
+                gradeMultiIndex grades(_self, _self);
+                auto grade_index = grades.template get_index<N(bygrade)>();
+
+                auto grade_iter = grade_index.find(schoolkey);
+                    while (grade_iter != grade_index.end()) {
+                        auto current_grade = (*grade_iter);
+                        if(current_grade.schoolfk == schoolkey) {
+                            runlotteryforgrade(account, current_grade.key);
+                        }
+                        grade_iter++;
+                    } 
+
+                schoolIndex schools(_self, _self);
+                auto iterator = schools.find(schoolkey);
+                eosio_assert(iterator != schools.end(), "school does not exist");
+                schools.modify( iterator, _self, [&]( auto& _school) {
+                    _school.status = 1;
+                });
+            }
+
+            void runlotteryforgrade(account_name account, uint64_t gradekey) {
                 require_auth(account);
                 studentMultiIndex students(_self, _self);
                 auto student_index = students.template get_index<N(bygrade)>();
-                gradeMultiIndex grades(_self, _self);
-                auto school_index = grades.template get_index<N(byschool)>();
-                auto grade_iter = school_index.find(school);
-                while(grade_iter != school_index.end()) {
-                    auto current_grade = (*grade_iter).grade_num;
-                    auto student_iter = student_index.find(current_grade);
+
+                auto student_iter = student_index.find(gradekey);
                     uint64_t result_index = 1;
                     while (student_iter != student_index.end()) {
                         auto current_student = (*student_iter);
-                        if(current_student.gradefk == current_grade) {
+                        if(current_student.gradefk == gradekey) {
                             student_index.modify(student_iter, account, [&](auto& student) {
                             student.result = result_index;
                         });
@@ -188,10 +209,15 @@ namespace CipherZ {
                         } 
                        student_iter++;
                     }
-                 school_index.modify(grade_iter, account, [&](auto& grade) {
-                    grade.status = 1;
-                });   
-                 grade_iter++;
+
+                gradeMultiIndex grades(_self, _self);
+                auto iterator = grades.find(gradekey);
+                eosio_assert(iterator != grades.end(), "grade not found");
+                auto grade = (*iterator);
+                if(grade.key == gradekey) {
+                            grades.modify(iterator, account, [&](auto& grade) {
+                            grade.status = 1;
+                    });
                 }
             }
 

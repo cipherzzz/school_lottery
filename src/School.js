@@ -74,6 +74,7 @@ export default class School extends Component {
             <tr key={grade.key}>
                 <td>{grade.grade_num}</td>
                 <td>{grade.openings}</td>
+                <td>{grade.status}</td>
                 <td>{actionView}</td>
             </tr>
         )
@@ -142,6 +143,7 @@ export default class School extends Component {
                 <tr>
                     <th>Grade</th>
                     <th>Openings</th>
+                    <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>

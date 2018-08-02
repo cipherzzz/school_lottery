@@ -61,8 +61,12 @@ class App extends Component {
     this.setState({schools: await this.network.getSchools()})
   }
 
-  modifySchool(school, name) {
-    this.network.modifySchool(school, name)
+  async modifySchool(school, name) {
+    await this.network.modifySchool(school, name)
+  }
+
+  runLottery(school) {
+    this.network.runLottery(school)
   }
 
   createSchool(name) {
@@ -266,6 +270,10 @@ class App extends Component {
     let actionView = null
         if(this.state.userType === 0) {
             actionView = <div>
+            <button
+                    className="pure-button pure-button-xsmall"
+                    onClick={()=>{this.runLottery(school)}}>Run Lottery</button> 
+            &nbsp;&nbsp;         
             <button
                     className="pure-button pure-button-xsmall"
                     onClick={()=>{this.setState({selectedSchool: school})}}>Edit</button> 
