@@ -1,9 +1,12 @@
 import React, { Component } from "react";
+import {connect} from 'react-redux';
+import PropTypes from 'prop-types';
 
 import "./app.css";
 import "./css/pure-min.css";
 
-export default class Student extends Component {
+import {getStudents, editStudent, addStudent} from './reducers/eos'
+class Student extends Component {
 
     constructor(props) {
         super(props)
@@ -11,31 +14,23 @@ export default class Student extends Component {
             firstName: '',
             lastName: '',
             grade: '',
-            ssn: '',
-            students: []
+            ssn: ''
         }
     }
 
     componentWillMount() {
         this.setState(this.stateFromProps(this.props))
-        this.getStudents(this.props.grade.key)
+        this.props.dispatch(getStudents(this.props.selectedGrade.key))
     }
 
     componentWillReceiveProps(newProps) {
         if(newProps !== this.props) {
             this.setState(this.stateFromProps(newProps))
-            this.getStudents(newProps.grade.key)
         }
     }
 
     stateFromProps(props) {
         return this.stateFromStudent(props.student)
-    }
-
-    async getStudents(grade_id) {
-        const students = await this.props.network.getStudents(grade_id)
-        console.log(students, grade_id)
-        this.setState({students})
     }
 
     studentFromState(){
@@ -45,7 +40,7 @@ export default class Student extends Component {
             grade_num: this.state.grade,
             ssn: this.state.ssn,
             gradefk: this.props.grade.key,
-            key: this.props.student?this.props.student.key:undefined
+            key: this.props.selectedStudent?this.props.selectedStudent.key:undefined
         }
     }
 
@@ -89,6 +84,7 @@ export default class Student extends Component {
 
      onDelete(child) {
         this.props.onDelete(child)
+        this.props.dispatch()
         this.setState({updateType: -1})
     }
     
@@ -114,13 +110,11 @@ export default class Student extends Component {
     }
 
     onAddForm() {
-        this.setState({updateType: 0})
-        this.props.onSelectStudent(null) 
+        this.props.dispatch(addStudent()) 
     }
 
-    onUpdateForm(child) {
-        this.setState({updateType: 1})
-        this.props.onSelectStudent(child) 
+    onUpdateForm(student) {
+        this.props.dispatch(editStudent(student))
     }
 
 
@@ -244,7 +238,7 @@ export default class Student extends Component {
     render() {
 
         let children = []
-        let data = this.state.students ? this.state.students : []
+        let data = this.props.students ? this.props.students : []
         console.log(this.state)
         if(data) {
             data.forEach(child => {
@@ -285,3 +279,20 @@ export default class Student extends Component {
         )
     }
 }
+
+Student.propTypes = {
+    students: PropTypes.array
+  };
+  
+  function mapStateToProps(state) {
+    return {
+        students: state.eos.students,
+        selectedGrade: state.eos.selectedGrade,
+        studentUpdateType: state.eos.studentUpdateType,
+        selectedStudent: state.eos.selectedStudent
+    };
+  }
+  
+  export default connect(
+    mapStateToProps,
+  )(Student);

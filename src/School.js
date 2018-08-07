@@ -1,31 +1,25 @@
 import React, { Component } from "react";
+import {connect} from 'react-redux';
+import PropTypes from 'prop-types';
 
 import "./app.css";
 import "./css/pure-min.css";
 
-//<div className="pure-control-group">
+import {getGrades} from './reducers/eos'
 
-export default class School extends Component {
+class School extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {grades: [], name: props.school.name, nameValid: true}
+        this.state = { name: props.selectedSchool.name, nameValid: true}
     }
 
     componentWillMount() {
-        this.getGrades(this.props.school.key)
+        this.props.dispatch(getGrades(this.props.selectedSchool.key))
     }
 
     componentWillReceiveProps(newProps) {
-        if(newProps.school !== this.props.school) {
-            this.getGrades(this.props.school.key)
-            this.setState({name: newProps.school.name})
-        }
-    }
-
-    async getGrades(school_id) {
-        const grades = await this.props.network.getGrades(school_id)
-        this.setState({grades: grades})
+        this.setState({name: newProps.selectedSchool.name})
     }
     
     isValid() {
@@ -126,7 +120,7 @@ export default class School extends Component {
     render() {
 
         let grades = []
-        this.state.grades && this.state.grades.forEach(grade => {
+        this.props.grades && this.props.grades.forEach(grade => {
             grades.push(this.renderGrade(grade))    
         })
         
@@ -158,3 +152,18 @@ export default class School extends Component {
         )
     }
 }
+
+School.propTypes = {
+    grades: PropTypes.array
+  };
+  
+  function mapStateToProps(state) {
+    return {
+        grades: state.eos.grades,
+        selectedSchool: state.eos.selectedSchool
+    };
+  }
+  
+  export default connect(
+    mapStateToProps,
+  )(School);

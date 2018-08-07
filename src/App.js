@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import Eos from 'eosjs'
+import {connect} from 'react-redux';
+import PropTypes from 'prop-types';
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -9,16 +10,15 @@ import './app.css'
 import School from './school'
 import Student from './student'
 import Grade from './grade'
-import Network from "./network"
-
-const network = {
-  protocol:'http',
-  blockchain:'eos',
-  host:'127.0.0.1',
-  port:8888,
-  chainId:'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f'
-}
-const eosOptions = {broadcast:true, chainId:'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f'}
+import { getSchools, 
+        selectSchool, 
+        selectGrade, 
+        newGrade, 
+        editGrade, 
+        reset,
+        login,
+        initScatter
+        } from "./reducers/eos"
 
 class App extends Component {
   
@@ -26,16 +26,9 @@ class App extends Component {
     super(props)
 
     this.state = {
-      storageValue: 0,
       scatter: null,
-      eos: null,
-      account: null,
-      identity: null,
-      schools: [],
       error: null,
       userType: -1, //-1 is unauthorized, 0 is superintendant, 1 is parent
-      gradeActionType: -1, //-1 is none, 0 is add, 1 is edit
-      selectedSchool: null,
       selectedGrade: null,
       selectedStudent: null
     }
@@ -46,19 +39,10 @@ class App extends Component {
     document.addEventListener('scatterLoaded', scatterExtension => {
       const scatter = window.scatter;
       window.scatter = null;
-      this.setState({scatter});
-
-      const eos = scatter.eos( network, Eos, eosOptions, "http")
-      this.setState({eos})
-      this.network = new Network(eos)
-      this.network.init()
-
-      this.getSchools()
+      this.setState({scatter})
+      this.props.dispatch(initScatter(scatter))
+      this.props.dispatch(getSchools(this.network));
   })
-  }
-
-  async getSchools() {
-    this.setState({schools: await this.network.getSchools()})
   }
 
   async modifySchool(school, name) {
@@ -106,7 +90,7 @@ class App extends Component {
   }
 
   manageStudents(grade) {
-    this.setState({selectedGrade: grade})
+    this.props.dispatch(selectGrade(grade))
   }
   
   updateSchool(school, name) {
@@ -118,20 +102,19 @@ class App extends Component {
   }
 
   setGrade(grade) {
-    console.log(JSON.stringify(grade))
-    this.setState({selectedGrade: grade})
+    this.props.dispatch(selectGrade(grade))
   }
 
   editGrade(grade) {
-    this.setState({selectedGrade: grade, gradeActionType: 1})
+    this.props.dispatch(editGrade(grade))
   }
 
   addGrade(grade) {
-    this.setState({selectedGrade: grade, gradeActionType: 0})
+    this.props.dispatch(newGrade())
   }
 
   newSchool() {
-    this.setState({selectedSchool: {name: ''}})
+    this.props.dispatch(selectSchool({name: ''}))
   }
 
   authenticateParent(){
@@ -144,54 +127,16 @@ class App extends Component {
 
   logout() {
     this.state.scatter.forgetIdentity().then(() => {
-      this.setState({userType: -1, selectedSchool: null, gradeActionType: -1})
+      this.props.dispatch(reset())
   });
   }
 
   loadScatterIdentity(isParent) {
-    
-    let requiredFields = {
-      personal:['firstname', 'lastname'],
-      location:['address', 'city', 'state', 'zipcode', 'phone'],
-      accounts:[network]
-    };
-    if(!isParent) {
-      requiredFields = {
-        personal:['firstname', 'lastname'],
-        accounts:[network]
-      }
-    }
-
-    this.state.scatter.getIdentity(requiredFields).then(identity => {
-      console.log(identity, "identityFound")
-      this.setState({identity})
-
-      const account = identity.accounts.find(acc=>acc.blockchain==='eos'); 
-
-      if(account) {
-        this.network.setAccount(account)
-        this.setState({account})
-        // We have a valid identity - now we set the user's requested type
-        if(isParent === true) {
-          this.setState({userType: 1})
-        } else {
-          this.setState({userType: 0})
-        }
-      } else {
-        throw new Error('Unable to find EOS account')
-      }
-      
-      this.state.eos.contract('lottery.code').then(contract => {
-        this.setState({contract})
-      }).catch(error => console.log(error)); 
-
-    }).catch(error => {
-      console.log(error, "identityCrisis!")
-    })
+    this.props.dispatch(login(isParent, this.state.scatter))
   }
 
   renderAuthenticateButtons() {
-    if(this.state.userType === -1) {
+    if(this.props.userType === -1 || this.props.identity === undefined) {
       return (
         <div>
           <a href="#" className="pure-menu-heading pure-menu-link">School Lottery</a>
@@ -204,7 +149,7 @@ class App extends Component {
         <div>
           <a href="#" className="pure-menu-heading pure-menu-link">School Lottery</a>
           <a onClick={this.logout.bind(this)} style={{float: "right", cursor: "pointer"}} className="pure-menu-heading pure-menu-button">Logout</a>
-          <div style={{float: "right", color: 'white'}} className="pure-menu-heading pure-menu-button"><i>{this.state.identity.personal.firstname + " " + this.state.identity.personal.lastname}</i></div>
+          <div style={{float: "right", color: 'white'}} className="pure-menu-heading pure-menu-button"><i>{this.props.identity.personal.firstname + " " + this.props.identity.personal.lastname}</i></div>
         </div>
       )
     }
@@ -212,27 +157,25 @@ class App extends Component {
 
 
   renderUserView() {
-    console.log("render user view:"+this.state.userType, this.state.selectedGrade)
-    if(this.state.userType === 1 && this.state.selectedGrade) {
+    console.log("render user view:"+this.props.userType, this.props.selectedGrade)
+    if(this.props.userType === 1 && this.props.selectedGrade) {
       return (
       <Student 
-        eos={this.state.eos}
-        school={this.state.selectedSchool}
-        grade={this.state.selectedGrade}
-        network={this.network}
-        student={this.state.selectedStudent}
+        school={this.props.selectedSchool}
+        grade={this.props.selectedGrade}
+        student={this.props.selectedStudent}
         onSave={(student, grade)=>{this.saveStudent(student, grade)}}
         onUpdate={(student)=>{this.updateStudent(student)}}
         onDelete={(student)=>{this.deleteStudent(student)}}
         onSelectStudent={(student)=>{this.setStudent(student)}}
         />
       )
-    } else if(this.state.userType === 0) {
+    } else if(this.props.userType === 0) {
       return (
       <Grade 
-        updateType={this.state.gradeActionType}
-        grade={this.state.selectedGrade}
-        onSave={(gradeInfo)=>{this.saveGrade(this.state.selectedSchool, gradeInfo)}}
+        updateType={this.props.gradeActionType}
+        grade={this.props.selectedGrade}
+        onSave={(gradeInfo)=>{this.saveGrade(this.props.selectedSchool, gradeInfo)}}
         onUpdate={(grade, gradeInfo)=>{this.updateGrade(grade, gradeInfo)}}
         onDelete={(grade)=>{this.deleteGrade(grade)}}
         />
@@ -243,7 +186,7 @@ class App extends Component {
   }
 
   renderUnauthenticated() {
-    if(this.state.userType === -1) {
+    if(this.props.userType === -1) {
       return (
         <div>
                 <h1>Trust the System</h1>
@@ -268,7 +211,7 @@ class App extends Component {
   renderSchool(school) {
 
     let actionView = null
-        if(this.state.userType === 0) {
+        if(this.props.userType === 0) {
             actionView = <div>
             <button
                     className="pure-button pure-button-xsmall"
@@ -276,19 +219,23 @@ class App extends Component {
             &nbsp;&nbsp;         
             <button
                     className="pure-button pure-button-xsmall"
-                    onClick={()=>{this.setState({selectedSchool: school})}}>Edit</button> 
+                    onClick={()=>{
+                      this.props.dispatch(selectSchool(school))
+                      }}>Edit</button> 
             &nbsp;&nbsp;
             <button
                     className="pure-button pure-button-xsmall"
                     onClick={()=>{this.deleteSchool(school)}}>Delete</button> 
         </div>
-        } else if(this.state.userType === 1) {
+        } else if(this.props.userType === 1) {
           actionView = <button
                     className="pure-button pure-button-xsmall"
-                    onClick={()=>{this.setState({selectedSchool: school})}}>Select</button>
+                    onClick={()=>{
+                      this.props.dispatch(selectSchool(school))
+                    }}>Select</button>
         }
 
-    let actionCell = this.state.userType === -1 ? null : <td>{actionView}</td>
+    let actionCell = this.props.userType === -1 ? null : <td>{actionView}</td>
 
     return (
       <tr key={school.key}>
@@ -301,12 +248,11 @@ class App extends Component {
 
   renderSelectedSchool() {
     let schoolView = null
-    if(this.state.selectedSchool) {
+    if(this.props.selectedSchool) {
       return (
       <School
-        network={this.network}
-        school={this.state.selectedSchool}
-        isAdmin={this.state.userType === 0}
+        school={this.props.selectedSchool}
+        isAdmin={this.props.userType === 0}
         onManageStudents={(grade)=>{this.manageStudents(grade)}}
         onUpdateSchool={(school, name)=>{this.updateSchool(school, name)}}
         onEditGrade={(grade)=>{this.editGrade(grade)}}
@@ -321,11 +267,13 @@ class App extends Component {
   renderSchools() {
 
     let schools = []
-    this.state.schools.forEach(school => {
-      schools.push(this.renderSchool(school))    
-    })
+    if(this.props.schools) {
+      this.props.schools.forEach(school => {
+        schools.push(this.renderSchool(school))    
+      })
+    }
 
-    let actionHead = this.state.userType === -1 ? null : <th>Action</th>
+    let actionHead = this.props.userType === -1 ? null : <th>Action</th>
 
     return (
       <table className="pure-table pure-table-horizontal">
@@ -345,7 +293,7 @@ class App extends Component {
   }
  
   renderAddSchool(){
-    if(this.state.userType === 0) {
+    if(this.props.userType === 0) {
         return (
             <button
                 className="pure-button pure-button-primary"
@@ -391,4 +339,24 @@ class App extends Component {
   }
 }
 
-export default App
+App.propTypes = {
+  schools: PropTypes.array
+};
+
+function mapStateToProps(state) {
+  return {
+      identity: state.eos.identity,
+      account: state.eos.account,
+      userType: state.eos.userType,
+      schools: state.eos.schools,
+      selectedSchool: state.eos.selectedSchool,
+      selectedStudent: state.eos.selectedStudent,
+      selectedGrade: state.eos.selectedGrade,
+      gradeActionType: state.eos.gradeActionType,
+      studentActionType: state.eos.studentActionType
+  };
+}
+
+export default connect(
+  mapStateToProps,
+)(App);
