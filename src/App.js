@@ -11,13 +11,23 @@ import School from './school'
 import Student from './student'
 import Grade from './grade'
 import { getSchools, 
-        selectSchool, 
-        selectGrade, 
+        manageSchool,  
+        manageGrade,
         newGrade, 
         editGrade, 
         reset,
         login,
-        initScatter
+        initScatter,
+        createSchool,
+        modifySchool,
+        deleteSchool,
+        saveStudent,
+        updateStudent,
+        deleteStudent,
+        saveGrade,
+        updateGrade,
+        deleteGrade,
+        runLottery
         } from "./reducers/eos"
 
 class App extends Component {
@@ -45,44 +55,44 @@ class App extends Component {
   })
   }
 
-  async modifySchool(school, name) {
-    await this.network.modifySchool(school, name)
+  modifySchool(school, name) {
+    this.props.dispatch(modifySchool(school, name))
   }
 
   runLottery(school) {
-    this.network.runLottery(school)
+    this.props.dispatch(runLottery(school))
   }
 
   createSchool(name) {
-    this.network.createSchool(name)
+    this.props.dispatch(createSchool(name))
   }
 
   deleteSchool(school) {
-    this.network.deleteSchool(school)
+    this.props.dispatch(deleteSchool(school))
   }
 
   saveStudent(student, grade) {
-    this.network.saveStudent(student, grade)
+    this.props.dispatch(saveStudent(student, grade))
   }
 
   updateStudent(student) {
-    this.network.updateStudent(student)
+    this.props.dispatch(updateStudent(student))
   }
 
   deleteStudent(student) {
-    this.network.deleteStudent(student)
+    this.props.dispatch(deleteStudent(student))
   }
 
   saveGrade(school, gradeInfo) {
-    this.network.saveGrade(school, gradeInfo)
+    this.props.dispatch(saveGrade(school, gradeInfo))
   }
 
   updateGrade(grade, gradeInfo) {
-    this.network.updateGrade(grade, gradeInfo)
+    this.props.dispatch(updateGrade(grade, gradeInfo))
   }
 
   deleteGrade(grade) {
-    this.network.deleteGrade(grade)
+    this.props.dispatch(deleteGrade(grade))
   }
 
   setStudent(student) {
@@ -90,7 +100,7 @@ class App extends Component {
   }
 
   manageStudents(grade) {
-    this.props.dispatch(selectGrade(grade))
+    this.props.dispatch(manageGrade(grade))
   }
   
   updateSchool(school, name) {
@@ -102,7 +112,7 @@ class App extends Component {
   }
 
   setGrade(grade) {
-    this.props.dispatch(selectGrade(grade))
+    this.props.dispatch(manageGrade(grade))
   }
 
   editGrade(grade) {
@@ -114,7 +124,7 @@ class App extends Component {
   }
 
   newSchool() {
-    this.props.dispatch(selectSchool({name: ''}))
+    this.props.dispatch(manageSchool({name: ''}))
   }
 
   authenticateParent(){
@@ -220,7 +230,7 @@ class App extends Component {
             <button
                     className="pure-button pure-button-xsmall"
                     onClick={()=>{
-                      this.props.dispatch(selectSchool(school))
+                      this.props.dispatch(manageSchool(school))
                       }}>Edit</button> 
             &nbsp;&nbsp;
             <button
@@ -231,7 +241,7 @@ class App extends Component {
           actionView = <button
                     className="pure-button pure-button-xsmall"
                     onClick={()=>{
-                      this.props.dispatch(selectSchool(school))
+                      this.props.dispatch(manageSchool(school))
                     }}>Select</button>
         }
 

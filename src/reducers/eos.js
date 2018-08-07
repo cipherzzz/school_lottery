@@ -101,8 +101,6 @@ export function login(isParent, scatter) {
             }
         }
 
-        console.log(scatter)
-
         const identity = await scatter.getIdentity(requiredFields)
         dispatch(setIdentity(identity))
 
@@ -128,13 +126,6 @@ export function receiveSchools(schools) {
     return {type: SET_SCHOOLS, schools};
 }
 
-export function getSchools() {
-    return async (dispatch) => {
-        const schools = await network.getSchools()
-        dispatch(receiveSchools(schools))
-    };
-}
-
 export function selectSchool(school) {
     return {type: SELECT_SCHOOL, school};
 }
@@ -143,26 +134,26 @@ export function receiveGrades(grades) {
     return {type: SET_GRADES, grades};
 }
 
-export function getGrades(schoolfk) {
-    return async (dispatch) => {
-        const grades = await network.getGrades(schoolfk)
-        dispatch(receiveGrades(grades))
-    };
-}
-
 export function receiveStudents(students) {
     return {type: SET_STUDENTS, students};
 }
 
-export function getStudents(gradefk) {
-    return async (dispatch) => {
-        const students = await network.getStudents(gradefk)
-        dispatch(receiveStudents(students))
-    };
-}
-
 export function selectGrade(grade) {
     return {type: SELECT_GRADE, grade};
+}
+
+export function manageGrade(grade) {
+    return (dispatch) => {
+        dispatch(selectGrade(grade))
+        dispatch(getStudents(grade.key))
+    }
+}
+
+export function manageSchool(school) {
+    return (dispatch) => {
+        dispatch(selectSchool(school))
+        dispatch(getGrades(school.key))
+    }
 }
 
 export function setGradeActionType(gradeActionType) {
@@ -203,6 +194,100 @@ export function editStudent(student) {
         dispatch(selectStudent(student))
         dispatch(setStudentActionType(1))
     }
+}
+
+export function runLottery(school) {
+    return async (dispatch) => {
+        await network.runLottery(school)
+        dispatch(getSchools())
+        dispatch(getGrades(school.key))
+        dispatch(selectGrade(null))
+    }
+}
+
+export function getSchools() {
+    return async (dispatch) => {
+        const schools = await network.getSchools()
+        dispatch(receiveSchools(schools))
+    };
+}
+
+export function createSchool(name) {
+    return async (dispatch) => {
+        await network.createSchool(name)
+        dispatch(getSchools())
+    };
+}
+
+export function modifySchool(school, name) {
+    return async (dispatch) => {
+        await network.modifySchool(school, name)
+        dispatch(getSchools())
+    };
+}
+
+export function deleteSchool(school) {
+    return async (dispatch) => {
+        await network.deleteSchool(school)
+        dispatch(getSchools())
+    };
+}
+
+export function saveGrade(school, gradeInfo) {
+    return async (dispatch) => {
+        await network.saveGrade(school, gradeInfo)
+        dispatch(getGrades(school.key))
+    };
+}
+
+export function updateGrade(grade, gradeInfo) {
+    return async (dispatch) => {
+        await network.updateGrade(grade, gradeInfo)
+        dispatch(getGrades(grade.schoolfk))
+    };
+}
+
+export function deleteGrade(grade) {
+    return async (dispatch) => {
+        await network.deleteGrade(grade)
+        dispatch(getGrades(grade.schoolfk))
+    };
+}
+
+export function getGrades(schoolfk) {
+    return async (dispatch) => {
+        const grades = await network.getGrades(schoolfk)
+        dispatch(receiveGrades(grades))
+    };
+}
+
+export function saveStudent(student, grade) {
+    return async (dispatch) => {
+        await network.saveStudent(student, grade)
+        dispatch(getStudents(grade.key))
+    };
+}
+
+export function updateStudent(student) {
+    return async (dispatch) => {
+        await network.updateStudent(student)
+        dispatch(getStudents(student.gradefk))
+    };
+}
+
+export function deleteStudent(student) {
+    return async (dispatch) => {
+        await network.deleteStudent(student)
+        dispatch(getStudents(student.gradefk))
+    };
+}
+
+export function getStudents(gradefk) {
+    return async (dispatch) => {
+        const students = await network.getStudents(gradefk)
+        console.log("students with grade", gradefk, students)
+        dispatch(receiveStudents(students))
+    };
 }
 
 export function eos(state = initialState, action) {

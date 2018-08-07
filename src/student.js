@@ -84,8 +84,6 @@ class Student extends Component {
 
      onDelete(child) {
         this.props.onDelete(child)
-        this.props.dispatch()
-        this.setState({updateType: -1})
     }
     
     isValid() {
@@ -159,13 +157,12 @@ class Student extends Component {
     }
 
     renderStudentForm() {
-        console.log("updateType: "+this.state.updateType)
-        if(this.state.updateType === -1) {
+        if(this.props.studentActionType === -1) {
             return <div />
         } else  {
             let action = this.onSave
             let title = 'Add Student'
-            if(this.state.updateType === 1) {
+            if(this.props.studentActionType === 1) {
                 action = this.onUpdate
                 title = 'Update Student'
             }
@@ -288,7 +285,7 @@ Student.propTypes = {
     return {
         students: state.eos.students,
         selectedGrade: state.eos.selectedGrade,
-        studentUpdateType: state.eos.studentUpdateType,
+        studentActionType: state.eos.studentActionType,
         selectedStudent: state.eos.selectedStudent
     };
   }
