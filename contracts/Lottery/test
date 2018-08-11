@@ -18,3 +18,5 @@ cleos push action lottery.code updategrade '["admin",0, 1, 33]' -p admin@active
 cleos get table lottery.code lottery.code school
 cleos get table lottery.code lottery.code grade
 cleos get table lottery.code lottery.code student
+
+cleos push action admin runlottery '["admin"]' -p admin@active

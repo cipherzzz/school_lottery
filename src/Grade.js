@@ -60,21 +60,6 @@ export default class Grade extends Component {
             openingsValid: e.target.value !== '' });
     }
 
-     onDelete(grade) {
-        this.props.onDelete(grade)
-        this.setState({updateType: -1})
-    }
-    
-    onAddForm() {
-        this.setState({updateType: 0})
-        this.props.onSelectGrade(null) 
-    }
-
-    onUpdateForm() {
-        this.setState({updateType: 1})
-        this.props.onSelectGrade(this.gradeFromState()) 
-    }
-
     isValid() {
         if(this.state.grade === '' || this.state.openings === '') {
             return false
@@ -94,24 +79,6 @@ export default class Grade extends Component {
             this.props.onUpdate(this.props.grade, this.gradeFromState())
         }
         
-    }
-
-
-    renderGrade(grade){
-        return (
-        <tr key={grade.key} onClick={()=> this.props.onSelectGrade(grade)}>
-            <td>{grade.grade_num}</td>
-            <td>{grade.openings}</td>
-            <td>
-                <button
-                        className="pure-button pure-button-small"
-                        onClick={this.onUpdateForm.bind(this)}>Update</button> 
-                &nbsp;&nbsp;
-                <button
-                        className="pure-button pure-button-small"
-                        onClick={()=>{this.onDelete(grade)}}>Delete</button> 
-            </td>
-        </tr>)   
     }
 
     renderGradeOption(grade) {
@@ -136,11 +103,25 @@ export default class Grade extends Component {
             })
             gradeOptions.unshift(<option key={''}></option>)
 
-            let action = this.onSave
-            let title = 'Add Grade'
-            if(this.props.updateType === 1) {
-                action = this.onUpdate
+            let title
+            let button
+            console.log(this.props.grade)
+            if(this.props.grade && this.props.grade.status === 1) {
+                title = 'Grade'
+                button = <div/>
+            }
+            else if(this.props.updateType === 1) {
                 title = 'Update Grade'
+                button = <button
+                                disabled={!this.isValid()}
+                                className="pure-button pure-button-primary"
+                                onClick={this.onUpdate.bind(this)}>Update</button>
+            } else if(this.props.updateType === 0) {
+                title = 'Add Grade'
+                button = <button
+                                disabled={!this.isValid()}
+                                className="pure-button pure-button-primary"
+                                onClick={this.onSave.bind(this)}>Save</button>
             }
         return (
             <div>
@@ -162,6 +143,7 @@ export default class Grade extends Component {
                         <div className="pure-control-group">
                             <label htmlFor="name">Openings</label>
                             <input id="lastName" type="text" placeholder="Number of Openings"
+                                disabled={this.props.grade && this.props.grade.status === 1}
                                 value={this.state.openings}
                                 onChange={this.onChangeOpenings.bind(this)} 
                                 />
@@ -169,11 +151,8 @@ export default class Grade extends Component {
                         </div>
 
                         <div className="pure-controls">
-                            <button
-                                disabled={!this.isValid()}
-                                className="pure-button pure-button-primary"
-                                onClick={action.bind(this)}>Save</button>
-                                &nbsp;&nbsp;   
+                            {button}
+                            &nbsp;&nbsp;   
                         </div>
                     </fieldset>
                 </div>
@@ -182,7 +161,6 @@ export default class Grade extends Component {
     }
 
     render() {
-        console.log("grade render:"+this.props.updateType)
         if(this.props.updateType === -1) {
             return <div/>
         } else {

@@ -14,14 +14,19 @@ export default class Network {
     }
 
     /* Table Data - Begin */
-    async getSchools() {
+    async getSchools(onlyOwner) {
         const data = await this.eos.getTableRows({
                                 "json": true,
                                 "scope": "lottery.code",
                                 "code": 'lottery.code',
                                 "table": "school"
-                                })                       
-        return data?data.rows:[]                      
+                                })  
+                            
+        if(onlyOwner){
+            return data?data.rows.filter((school)=> school.account === this.account.name):[]
+        } else {
+            return data?data.rows:[]
+        }                                                  
     }
 
     async getGrades(school_id) {

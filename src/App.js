@@ -51,7 +51,7 @@ class App extends Component {
       window.scatter = null;
       this.setState({scatter})
       this.props.dispatch(initScatter(scatter))
-      this.props.dispatch(getSchools(this.network));
+      this.props.dispatch(getSchools());
   })
   }
 
@@ -220,22 +220,26 @@ class App extends Component {
 
   renderSchool(school) {
 
+    const deleteButton = <button
+    className="pure-button pure-button-xsmall"
+    onClick={()=>{this.deleteSchool(school)}}>Delete</button>
+
+    const lotteryButton = <button
+    className="pure-button pure-button-xsmall"
+    onClick={()=>{this.runLottery(school)}}>Run Lottery</button>
+
     let actionView = null
         if(this.props.userType === 0) {
             actionView = <div>
-            <button
-                    className="pure-button pure-button-xsmall"
-                    onClick={()=>{this.runLottery(school)}}>Run Lottery</button> 
+            {school.status !== 1?lotteryButton:null} 
             &nbsp;&nbsp;         
+            {school.status !== 1?deleteButton:null} 
+            &nbsp;&nbsp;        
             <button
                     className="pure-button pure-button-xsmall"
                     onClick={()=>{
                       this.props.dispatch(manageSchool(school))
-                      }}>Edit</button> 
-            &nbsp;&nbsp;
-            <button
-                    className="pure-button pure-button-xsmall"
-                    onClick={()=>{this.deleteSchool(school)}}>Delete</button> 
+                      }}>Select</button>  
         </div>
         } else if(this.props.userType === 1) {
           actionView = <button
@@ -250,7 +254,7 @@ class App extends Component {
     return (
       <tr key={school.key}>
           <td>{school.name}</td>
-          <td>{school.status}</td>
+          <td>{school.status===0?'Open':'Closed'}</td>
           {actionCell}
       </tr>
   )
@@ -262,6 +266,7 @@ class App extends Component {
       return (
       <School
         school={this.props.selectedSchool}
+        grade={this.props.selectedGrade}
         isAdmin={this.props.userType === 0}
         onManageStudents={(grade)=>{this.manageStudents(grade)}}
         onUpdateSchool={(school, name)=>{this.updateSchool(school, name)}}

@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import "./app.css";
 import "./css/pure-min.css";
 
-import {getStudents, editStudent, addStudent} from './reducers/eos'
+import {getStudents, editStudent, newStudent} from './reducers/eos'
 class Student extends Component {
 
     constructor(props) {
@@ -108,7 +108,7 @@ class Student extends Component {
     }
 
     onAddForm() {
-        this.props.dispatch(addStudent()) 
+        this.props.dispatch(newStudent()) 
     }
 
     onUpdateForm(student) {
@@ -116,30 +116,30 @@ class Student extends Component {
     }
 
 
-    renderStudent(child){
+    renderStudent(student){
         let actionView = <td>
             <button
                     className="pure-button pure-button-small"
                     onClick={()=>{}}>Email School</button>
         </td>
-        if(child.result === 0) {
+        if(student.result === 0) {
             actionView = <td>
             <button
                     className="pure-button pure-button-small"
-                    onClick={()=>{this.onUpdateForm(child)}}>Update</button> 
+                    onClick={()=>{this.onUpdateForm(student)}}>Update</button> 
             &nbsp;&nbsp;
             <button
                     className="pure-button pure-button-small"
-                    onClick={()=>{this.onDelete(child)}}>Delete</button> 
+                    onClick={()=>{this.onDelete(student)}}>Delete</button> 
         </td>
         }
         return (
-        <tr key={child.ssn}>
-            <td>{child.firstname}</td>
-            <td>{child.lastname}</td>
-            <td>{child.grade}</td>
-            <td>{child.ssn}</td>
-            <td>{child.result}</td>
+        <tr key={student.ssn}>
+            <td>{student.firstname}</td>
+            <td>{student.lastname}</td>
+            <td>{this.props.grade.grade_num}</td>
+            <td>{student.ssn}</td>
+            <td>{student.result}</td>
             {actionView}
         </tr>)   
     }
@@ -157,7 +157,7 @@ class Student extends Component {
     }
 
     renderStudentForm() {
-        if(this.props.studentActionType === -1) {
+        if(this.props.selectedGrade && this.props.selectedGrade.status !== 0) {
             return <div />
         } else  {
             let action = this.onSave
@@ -232,6 +232,17 @@ class Student extends Component {
         }
     }
 
+    renderAddButton() {
+        if(this.props.selectedStudent && this.props.selectedStudent.result !== 0) {
+            return <button
+            className="pure-button pure-button-primary"
+            onClick={()=>{this.onAddForm()}}>Add Student
+        </button>
+        } else {
+            return <div />
+        }
+    }
+
     render() {
 
         let children = []
@@ -264,10 +275,7 @@ class Student extends Component {
             </tbody>
         </table>
         <br />
-        <button
-            className="pure-button pure-button-primary"
-            onClick={()=>{this.onAddForm()}}>Add Child
-        </button>
+        {this.renderAddButton()}
         </div>
         <div className="pure-u-1-2">
         {this.renderStudentForm()} 

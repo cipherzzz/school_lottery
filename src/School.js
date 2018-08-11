@@ -47,35 +47,39 @@ class School extends Component {
     renderGrade(grade){
 
         let actionView = null
+        
         if(this.props.isAdmin) {
+            const deleteButton = <button
+                    className="pure-button pure-button-xsmall"
+                    onClick={()=>{this.props.onDeleteGrade(grade)}}>Delete</button>
+
             actionView = <div>
             <button
                     className="pure-button pure-button-xsmall"
-                    onClick={()=>{this.props.onEditGrade(grade)}}>Edit 
-                    Grade</button> 
+                    onClick={()=>{this.props.onEditGrade(grade)}}>
+                    {this.props.selectedSchool.status !== 1?'Edit':'View'}</button> 
             &nbsp;&nbsp;
-            <button
-                    className="pure-button pure-button-xsmall"
-                    onClick={()=>{this.props.onDeleteGrade(grade)}}>Delete</button> 
+            {this.props.selectedSchool.status !== 1?deleteButton:<div/>}
+             
         </div>
         } else {
             actionView = <button
                     className="pure-button pure-button-xsmall"
-                    onClick={()=>{this.props.onManageStudents(grade)}}>Manage</button>
+                    onClick={()=>{this.props.onManageStudents(grade)}}>{this.props.selectedSchool.status !== 1?'Manage':'View'}</button>
         }
 
         return (
             <tr key={grade.key}>
                 <td>{grade.grade_num}</td>
                 <td>{grade.openings}</td>
-                <td>{grade.status}</td>
+                <td>{grade.status === 0?'Open':'Closed'}</td>
                 <td>{actionView}</td>
             </tr>
         )
     }
 
     renderAddGrade(){
-        if(this.props.isAdmin) {
+        if(this.props.isAdmin && this.props.school.status !== 1) {
             return (
                 <button
                     disabled={this.props.school.key === undefined}
@@ -90,7 +94,7 @@ class School extends Component {
     }
 
     renderName() {
-        if(this.props.isAdmin) {
+        if(this.props.isAdmin && this.props.school.status !== 1) {
             const isNew = this.props.school.key === undefined
             const buttonName = isNew ? 'Create School' : 'Update Name'
             return (

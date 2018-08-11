@@ -205,9 +205,9 @@ export function runLottery(school) {
     }
 }
 
-export function getSchools() {
+export function getSchools(account) {
     return async (dispatch) => {
-        const schools = await network.getSchools()
+        const schools = await network.getSchools(account)
         dispatch(receiveSchools(schools))
     };
 }
