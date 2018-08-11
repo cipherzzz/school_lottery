@@ -173,9 +173,10 @@ namespace CipherZ {
                 require_auth(account);
 
                 gradeMultiIndex grades(_self, _self);
-                auto grade_index = grades.template get_index<N(bygrade)>();
+                auto grade_index = grades.template get_index<N(byschool)>();
 
                 auto grade_iter = grade_index.find(schoolkey);
+                print("grade_iter: ", grade_iter == grade_index.end());
                     while (grade_iter != grade_index.end()) {
                         auto current_grade = (*grade_iter);
                         if(current_grade.schoolfk == schoolkey) {

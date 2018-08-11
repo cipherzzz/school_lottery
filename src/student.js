@@ -1,9 +1,12 @@
 import React, { Component } from "react";
+import {connect} from 'react-redux';
+import PropTypes from 'prop-types';
 
 import "./app.css";
 import "./css/pure-min.css";
 
-export default class Student extends Component {
+import {getStudents, editStudent, newStudent} from './reducers/eos'
+class Student extends Component {
 
     constructor(props) {
         super(props)
@@ -11,31 +14,23 @@ export default class Student extends Component {
             firstName: '',
             lastName: '',
             grade: '',
-            ssn: '',
-            students: []
+            ssn: ''
         }
     }
 
     componentWillMount() {
         this.setState(this.stateFromProps(this.props))
-        this.getStudents(this.props.grade.key)
+        this.props.dispatch(getStudents(this.props.selectedGrade.key))
     }
 
     componentWillReceiveProps(newProps) {
         if(newProps !== this.props) {
             this.setState(this.stateFromProps(newProps))
-            this.getStudents(newProps.grade.key)
         }
     }
 
     stateFromProps(props) {
         return this.stateFromStudent(props.student)
-    }
-
-    async getStudents(grade_id) {
-        const students = await this.props.network.getStudents(grade_id)
-        console.log(students, grade_id)
-        this.setState({students})
     }
 
     studentFromState(){
@@ -45,7 +40,7 @@ export default class Student extends Component {
             grade_num: this.state.grade,
             ssn: this.state.ssn,
             gradefk: this.props.grade.key,
-            key: this.props.student?this.props.student.key:undefined
+            key: this.props.selectedStudent?this.props.selectedStudent.key:undefined
         }
     }
 
@@ -89,7 +84,6 @@ export default class Student extends Component {
 
      onDelete(child) {
         this.props.onDelete(child)
-        this.setState({updateType: -1})
     }
     
     isValid() {
@@ -114,40 +108,38 @@ export default class Student extends Component {
     }
 
     onAddForm() {
-        this.setState({updateType: 0})
-        this.props.onSelectStudent(null) 
+        this.props.dispatch(newStudent()) 
     }
 
-    onUpdateForm(child) {
-        this.setState({updateType: 1})
-        this.props.onSelectStudent(child) 
+    onUpdateForm(student) {
+        this.props.dispatch(editStudent(student))
     }
 
 
-    renderStudent(child){
+    renderStudent(student){
         let actionView = <td>
             <button
                     className="pure-button pure-button-small"
                     onClick={()=>{}}>Email School</button>
         </td>
-        if(child.result === 0) {
+        if(student.result === 0) {
             actionView = <td>
             <button
                     className="pure-button pure-button-small"
-                    onClick={()=>{this.onUpdateForm(child)}}>Update</button> 
+                    onClick={()=>{this.onUpdateForm(student)}}>Update</button> 
             &nbsp;&nbsp;
             <button
                     className="pure-button pure-button-small"
-                    onClick={()=>{this.onDelete(child)}}>Delete</button> 
+                    onClick={()=>{this.onDelete(student)}}>Delete</button> 
         </td>
         }
         return (
-        <tr key={child.ssn}>
-            <td>{child.firstname}</td>
-            <td>{child.lastname}</td>
-            <td>{child.grade}</td>
-            <td>{child.ssn}</td>
-            <td>{child.result}</td>
+        <tr key={student.ssn}>
+            <td>{student.firstname}</td>
+            <td>{student.lastname}</td>
+            <td>{this.props.grade.grade_num}</td>
+            <td>{student.ssn}</td>
+            <td>{student.result}</td>
             {actionView}
         </tr>)   
     }
@@ -165,13 +157,12 @@ export default class Student extends Component {
     }
 
     renderStudentForm() {
-        console.log("updateType: "+this.state.updateType)
-        if(this.state.updateType === -1) {
+        if(this.props.selectedGrade && this.props.selectedGrade.status !== 0) {
             return <div />
         } else  {
             let action = this.onSave
             let title = 'Add Student'
-            if(this.state.updateType === 1) {
+            if(this.props.studentActionType === 1) {
                 action = this.onUpdate
                 title = 'Update Student'
             }
@@ -241,10 +232,21 @@ export default class Student extends Component {
         }
     }
 
+    renderAddButton() {
+        if(this.props.selectedStudent && this.props.selectedStudent.result !== 0) {
+            return <button
+            className="pure-button pure-button-primary"
+            onClick={()=>{this.onAddForm()}}>Add Student
+        </button>
+        } else {
+            return <div />
+        }
+    }
+
     render() {
 
         let children = []
-        let data = this.state.students ? this.state.students : []
+        let data = this.props.students ? this.props.students : []
         console.log(this.state)
         if(data) {
             data.forEach(child => {
@@ -273,10 +275,7 @@ export default class Student extends Component {
             </tbody>
         </table>
         <br />
-        <button
-            className="pure-button pure-button-primary"
-            onClick={()=>{this.onAddForm()}}>Add Child
-        </button>
+        {this.renderAddButton()}
         </div>
         <div className="pure-u-1-2">
         {this.renderStudentForm()} 
@@ -285,3 +284,20 @@ export default class Student extends Component {
         )
     }
 }
+
+Student.propTypes = {
+    students: PropTypes.array
+  };
+  
+  function mapStateToProps(state) {
+    return {
+        students: state.eos.students,
+        selectedGrade: state.eos.selectedGrade,
+        studentActionType: state.eos.studentActionType,
+        selectedStudent: state.eos.selectedStudent
+    };
+  }
+  
+  export default connect(
+    mapStateToProps,
+  )(Student);

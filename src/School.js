@@ -1,31 +1,25 @@
 import React, { Component } from "react";
+import {connect} from 'react-redux';
+import PropTypes from 'prop-types';
 
 import "./app.css";
 import "./css/pure-min.css";
 
-//<div className="pure-control-group">
+import {getGrades} from './reducers/eos'
 
-export default class School extends Component {
+class School extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {grades: [], name: props.school.name, nameValid: true}
+        this.state = { name: props.selectedSchool.name, nameValid: true}
     }
 
     componentWillMount() {
-        this.getGrades(this.props.school.key)
+        this.props.dispatch(getGrades(this.props.selectedSchool.key))
     }
 
     componentWillReceiveProps(newProps) {
-        if(newProps.school !== this.props.school) {
-            this.getGrades(this.props.school.key)
-            this.setState({name: newProps.school.name})
-        }
-    }
-
-    async getGrades(school_id) {
-        const grades = await this.props.network.getGrades(school_id)
-        this.setState({grades: grades})
+        this.setState({name: newProps.selectedSchool.name})
     }
     
     isValid() {
@@ -53,35 +47,39 @@ export default class School extends Component {
     renderGrade(grade){
 
         let actionView = null
+        
         if(this.props.isAdmin) {
+            const deleteButton = <button
+                    className="pure-button pure-button-xsmall"
+                    onClick={()=>{this.props.onDeleteGrade(grade)}}>Delete</button>
+
             actionView = <div>
             <button
                     className="pure-button pure-button-xsmall"
-                    onClick={()=>{this.props.onEditGrade(grade)}}>Edit 
-                    Grade</button> 
+                    onClick={()=>{this.props.onEditGrade(grade)}}>
+                    {this.props.selectedSchool.status !== 1?'Edit':'View'}</button> 
             &nbsp;&nbsp;
-            <button
-                    className="pure-button pure-button-xsmall"
-                    onClick={()=>{this.props.onDeleteGrade(grade)}}>Delete</button> 
+            {this.props.selectedSchool.status !== 1?deleteButton:<div/>}
+             
         </div>
         } else {
             actionView = <button
                     className="pure-button pure-button-xsmall"
-                    onClick={()=>{this.props.onManageStudents(grade)}}>Manage</button>
+                    onClick={()=>{this.props.onManageStudents(grade)}}>{this.props.selectedSchool.status !== 1?'Manage':'View'}</button>
         }
 
         return (
             <tr key={grade.key}>
                 <td>{grade.grade_num}</td>
                 <td>{grade.openings}</td>
-                <td>{grade.status}</td>
+                <td>{grade.status === 0?'Open':'Closed'}</td>
                 <td>{actionView}</td>
             </tr>
         )
     }
 
     renderAddGrade(){
-        if(this.props.isAdmin) {
+        if(this.props.isAdmin && this.props.school.status !== 1) {
             return (
                 <button
                     disabled={this.props.school.key === undefined}
@@ -96,7 +94,7 @@ export default class School extends Component {
     }
 
     renderName() {
-        if(this.props.isAdmin) {
+        if(this.props.isAdmin && this.props.school.status !== 1) {
             const isNew = this.props.school.key === undefined
             const buttonName = isNew ? 'Create School' : 'Update Name'
             return (
@@ -126,7 +124,7 @@ export default class School extends Component {
     render() {
 
         let grades = []
-        this.state.grades && this.state.grades.forEach(grade => {
+        this.props.grades && this.props.grades.forEach(grade => {
             grades.push(this.renderGrade(grade))    
         })
         
@@ -158,3 +156,18 @@ export default class School extends Component {
         )
     }
 }
+
+School.propTypes = {
+    grades: PropTypes.array
+  };
+  
+  function mapStateToProps(state) {
+    return {
+        grades: state.eos.grades,
+        selectedSchool: state.eos.selectedSchool
+    };
+  }
+  
+  export default connect(
+    mapStateToProps,
+  )(School);
