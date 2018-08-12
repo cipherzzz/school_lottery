@@ -135,6 +135,7 @@ class School extends Component {
 
         return (
             <div>
+                
             {this.renderName()}       
             <table className="pure-table pure-table-horizontal">
             <thead>

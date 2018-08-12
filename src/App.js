@@ -321,6 +321,16 @@ class App extends Component {
     }
   }
 
+  renderError() {
+    if(this.props.error) {
+      return <div>
+      <h4 style={{color: "red", size: 20}}>{this.props.error}</h4>
+    </div>
+    } else {
+      return null
+    }
+  }
+
   render() {
 
     return (
@@ -331,8 +341,9 @@ class App extends Component {
         <main className="container">
           <div className="pure-g">
             <div className="pure-u-1-1">
+              <br/>
               {this.renderUnauthenticated()}
-              <br />
+              {this.renderError()}
               <div className="pure-g">
                 <div className="pure-u-1-2">
                   <h4>Schools</h4>
@@ -362,6 +373,7 @@ function mapStateToProps(state) {
   return {
       identity: state.eos.identity,
       account: state.eos.account,
+      error: state.eos.error,
       userType: state.eos.userType,
       schools: state.eos.schools,
       selectedSchool: state.eos.selectedSchool,

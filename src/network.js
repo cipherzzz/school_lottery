@@ -63,19 +63,23 @@ export default class Network {
 
     async runLottery(school){
         await this.contract.runlottery(this.account.name, school.key, this.options)
+        return school
     }
 
     /* School */
     async modifySchool(school, name) {
         await this.contract.updateschool(this.account.name, school.key, name, this.options)
+        return school
     }
 
     async createSchool(name) {
         await this.contract.addschool(this.account.name, name, this.options)
+        return name
     }
 
     async deleteSchool(school) {
         await this.contract.remschool(this.account.name, school.key, this.options)
+        return school
     }
     /* School */
 
@@ -83,14 +87,17 @@ export default class Network {
     /* Student */
     async saveStudent(student, grade) {
         await this.contract.addstudent(this.account.name, grade.key, student.ssn, student.firstname, student.lastname, this.options)
+        return grade
     }
 
     async updateStudent(student) {
-            await this.contract.updatestuden(this.account.name, student.key, student.ssn, student.firstname, student.lastname, student.gradefk, this.options)
+        await this.contract.updatestuden(this.account.name, student.key, student.ssn, student.firstname, student.lastname, student.gradefk, this.options)
+        return student
     }
 
     async deleteStudent(student) {
         await this.contract.remstudent(this.account.name, student.key, this.options)
+        return student
     }
     /* Student */
 
@@ -98,14 +105,17 @@ export default class Network {
     /* Grade */
     async saveGrade(school, gradeInfo) {
         await this.contract.addgrade(this.account.name, school.key, Number(gradeInfo.grade_num), Number(gradeInfo.openings), this.options)
+        return school
     }
 
     async updateGrade(grade, gradeInfo) {
         await this.contract.updategrade(this.account.name, grade.key, gradeInfo.openings, this.options)
+        return grade
     }
 
     async deleteGrade(grade) {
         await this.contract.remgrade(this.account.name, grade.key, this.options)
+        return grade
     }
     /* Grade */
 }

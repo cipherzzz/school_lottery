@@ -13,6 +13,7 @@ const initialState = {
     selectedGrade: undefined,
     gradeActionType: -1,
     selectedStudent: undefined,
+    error: undefined
 };
 
 const networkOptions = {
@@ -44,6 +45,8 @@ const SET_STUDENT_ACTION_TYPE = "setStudentActionType"
 const SET_STUDENTS = "setStudents"
 const SELECT_STUDENT = "selectStudent"
 
+const SET_ERROR = "setError"
+
 let network
 
 export function reset() {
@@ -56,6 +59,7 @@ export function reset() {
         dispatch(selectGrade(undefined))
         dispatch(selectStudent(undefined))
         dispatch(setGradeActionType(-1))
+        dispatch(setError(undefined))
     };
 }
 
@@ -146,6 +150,7 @@ export function selectGrade(grade) {
 
 export function manageGrade(grade) {
     return (dispatch) => {
+        dispatch(setError(undefined))
         dispatch(selectGrade(grade))
         dispatch(getStudents(grade.key))
     }
@@ -153,6 +158,7 @@ export function manageGrade(grade) {
 
 export function manageSchool(school) {
     return (dispatch) => {
+        dispatch(setError(undefined))
         dispatch(selectSchool(school))
         dispatch(getGrades(school.key))
     }
@@ -164,6 +170,7 @@ export function setGradeActionType(gradeActionType) {
 
 export function newGrade() {
     return (dispatch) => {
+        dispatch(setError(undefined))
         dispatch(selectGrade(null))
         dispatch(setGradeActionType(0))
     }
@@ -171,6 +178,7 @@ export function newGrade() {
 
 export function editGrade(grade) {
     return (dispatch) => {
+        dispatch(setError(undefined))
         dispatch(selectGrade(grade))
         dispatch(setGradeActionType(1))
     }
@@ -184,8 +192,13 @@ export function setStudentActionType(studentActionType) {
     return {type: SET_STUDENT_ACTION_TYPE, studentActionType};
 }
 
+export function setError(error) {
+    return {type: SET_ERROR, error};
+}
+
 export function newStudent() {
     return (dispatch) => {
+        dispatch(setError(undefined))
         dispatch(selectStudent(null))
         dispatch(setStudentActionType(0))
     }
@@ -193,6 +206,7 @@ export function newStudent() {
 
 export function editStudent(student) {
     return (dispatch) => {
+        dispatch(setError(undefined))
         dispatch(selectStudent(student))
         dispatch(setStudentActionType(1))
     }
@@ -200,95 +214,165 @@ export function editStudent(student) {
 
 export function runLottery(school) {
     return async (dispatch) => {
-        await network.runLottery(school)
-        dispatch(getSchools())
-        dispatch(getGrades(school.key))
-        dispatch(selectGrade(null))
+        dispatch(setError(undefined))
+        network.runLottery(school)
+        .then((school)=>{
+            dispatch(getSchools())
+            dispatch(getGrades(school.key))
+            dispatch(selectGrade(null))
+        })
+        .catch((error)=>{
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     }
 }
 
 export function getSchools(account) {
     return async (dispatch) => {
-        const schools = await network.getSchools(account)
-        dispatch(receiveSchools(schools))
+        dispatch(setError(undefined))
+        network.getSchools(account)
+        .then((schools)=>{dispatch(receiveSchools(schools))})
+        .catch((error)=>{
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     };
 }
 
 export function createSchool(name) {
     return async (dispatch) => {
-        await network.createSchool(name)
-        dispatch(getSchools())
+        dispatch(setError(undefined))
+        network.createSchool(name)
+        .then(()=>{dispatch(getSchools())})
+        .catch((error)=>{
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     };
 }
 
 export function modifySchool(school, name) {
     return async (dispatch) => {
-        await network.modifySchool(school, name)
-        dispatch(getSchools())
+        dispatch(setError(undefined))
+        network.modifySchool(school, name)
+        .then(()=>{dispatch(getSchools())})
+        .catch((error)=>{
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     };
 }
 
 export function deleteSchool(school) {
     return async (dispatch) => {
-        await network.deleteSchool(school)
-        dispatch(getSchools())
+        dispatch(setError(undefined))
+        network.deleteSchool(school)
+        .then(()=>{dispatch(getSchools())})
+        .catch((error)=>{
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     };
 }
 
 export function saveGrade(school, gradeInfo) {
     return async (dispatch) => {
-        await network.saveGrade(school, gradeInfo)
-        dispatch(getGrades(school.key))
+        dispatch(setError(undefined))
+        network.saveGrade(school, gradeInfo)
+        .then((school)=>{ dispatch(getGrades(school.key))})
+        .catch((error)=>{
+            console.log(error)
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     };
 }
 
 export function updateGrade(grade, gradeInfo) {
     return async (dispatch) => {
-        await network.updateGrade(grade, gradeInfo)
-        dispatch(getGrades(grade.schoolfk))
+        dispatch(setError(undefined))
+        network.updateGrade(grade, gradeInfo)
+        .then((grade)=>{ 
+            console.log(grade) 
+            dispatch(getGrades(grade.schoolfk))
+        })
+        .catch((error)=>{
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     };
 }
 
 export function deleteGrade(grade) {
     return async (dispatch) => {
-        await network.deleteGrade(grade)
-        dispatch(getGrades(grade.schoolfk))
+        dispatch(setError(undefined))
+        network.deleteGrade(grade)
+        .then((grade)=>{ dispatch(getGrades(grade.schoolfk))})
+        .catch((error)=>{
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     };
 }
 
 export function getGrades(schoolfk) {
     return async (dispatch) => {
-        const grades = await network.getGrades(schoolfk)
-        dispatch(receiveGrades(grades))
+        dispatch(setError(undefined))
+        network.getGrades(schoolfk)
+        .then((grades)=>{dispatch(receiveGrades(grades))})
+        .catch((error)=>{
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     };
 }
 
 export function saveStudent(student, grade) {
     return async (dispatch) => {
-        await network.saveStudent(student, grade)
-        dispatch(getStudents(grade.key))
+        dispatch(setError(undefined))
+        network.saveStudent(student, grade)
+        .then((grade)=>{dispatch(getStudents(grade.key))})
+        .catch((error)=>{
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     };
 }
 
 export function updateStudent(student) {
     return async (dispatch) => {
-        await network.updateStudent(student)
-        dispatch(getStudents(student.gradefk))
+        dispatch(setError(undefined))
+        network.updateStudent(student)
+        .then((student)=>{dispatch(getStudents(student.gradefk))})
+        .catch((error)=>{
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     };
 }
 
 export function deleteStudent(student) {
     return async (dispatch) => {
-        await network.deleteStudent(student)
-        dispatch(getStudents(student.gradefk))
+        dispatch(setError(undefined))
+        network.deleteStudent(student)
+        .then((student)=>{dispatch(getStudents(student.gradefk))})
+        .catch((error)=>{
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     };
 }
 
 export function getStudents(gradefk) {
     return async (dispatch) => {
-        const students = await network.getStudents(gradefk)
-        console.log("students with grade", gradefk, students)
-        dispatch(receiveStudents(students))
+        dispatch(setError(undefined))
+        network.getStudents(gradefk)
+        .then((students)=>{dispatch(receiveStudents(students))})
+        .catch((error)=>{
+            const err = JSON.parse(error)
+            dispatch(setError(err.error.what))
+        })
     };
 }
 
@@ -341,7 +425,11 @@ export function eos(state = initialState, action) {
     case SELECT_STUDENT:
         return Object.assign({}, state, {
             selectedStudent: action.student
-        })          
+        })  
+    case SET_ERROR:
+        return Object.assign({}, state, {
+            error: action.error
+        })            
     default:
       return state;
   }
