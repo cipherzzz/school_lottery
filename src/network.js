@@ -1,3 +1,4 @@
+import Eos from 'eosjs'
 export default class Network {
 
     constructor(eos) {
@@ -21,9 +22,12 @@ export default class Network {
                                 "code": 'lottery.code',
                                 "table": "school"
                                 })  
-                            
+                    
         if(onlyOwner){
-            return data?data.rows.filter((school)=> school.account === this.account.name):[]
+            return data?data.rows.filter((school)=> 
+            {
+                return true // for now
+            }):[]
         } else {
             return data?data.rows:[]
         }                                                  

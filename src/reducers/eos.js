@@ -113,8 +113,10 @@ export function login(isParent, scatter) {
             // We have a valid identity - now we set the user's requested type
             if(isParent === true) {
                 dispatch(setUserType(1))
+                dispatch(getSchools(false))
             } else {
                 dispatch(setUserType(0))
+                dispatch(getSchools(true))
             }
         } else {
             throw new Error('Unable to find EOS account')
