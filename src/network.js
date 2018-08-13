@@ -26,9 +26,7 @@ export default class Network {
         if(onlyOwner){
             return data?data.rows.filter((school)=> 
             {
-                console.log("Encoded:", school.account_name)
-                console.log("Decoded:", Eos.modules.format.decodeName(school.account_name))
-                return true // for now
+                return this.account.name === Eos.modules.format.decodeName(school.account_name, false)
             }):[]
         } else {
             return data?data.rows:[]
