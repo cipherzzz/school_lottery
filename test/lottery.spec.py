@@ -5,6 +5,7 @@ import eosf
 import node
 import unittest
 from termcolor import cprint
+import time
 
 setup.set_verbose(False)
 setup.use_keosd(False)
@@ -69,55 +70,31 @@ class Test1(unittest.TestCase):
 
     def setUp(self):
         pass
-        
 
-    def testGrade(self):
-
+    def removeSchool(self, account, schoolkey):
         #
-        # Description: Add Grade as Admin
-        # Expectation: Succeed and Data exist
+        # Description: Remove School as Admin
+        # Expectation: Succeed and record removed
         #
-            cprint(""" Action contract.push_action("addgrade") """, 'magenta')
+            time.sleep(1) # Do this to prevent duplicate transaction in same block
+            cprint(""" Action contract.push_action("remschool") """, 'magenta')
             action = contract.push_action(
-                "addgrade", "[" + str(account_admin) + ", 1, 25]", account_admin)
+                "remschool", "[" + str(account) + ", "+str(schoolkey)+"]", account)
             print(action)
             self.assertFalse(action.error)
-            t = contract.table("grade", account_deploy)
+            t = contract.table("school", account_deploy)
             self.assertFalse(t.error)
-            self.assertEqual(t.json["rows"][0]["grade_num"], 1)
-            self.assertEqual(t.json["rows"][0]["openings"], 25)
-        #
+            self.assertEqual(t.json["rows"], [])
         #
 
-        #
-        # Description: Remove Grade as Parent
-        # Expectation: Fail since only owner can remove
-        #
-            cprint(""" Action contract.push_action("remgrade") ***WARNING: This action should fail due to authority mismatch! """, 'magenta')
-            action = contract.push_action(
-                "remgrade", "[" + str(account_parent) + ", 1]", account_parent)
-            print(action)
-            self.assertTrue(action.error)
-        #
-
-        #
-        # Description: Add same Grade
-        # Expectation: Fail since grade must be unique
-        #
-            cprint(""" Action contract.push_action("addgrade") ***WARNING: This action should fail due to uniqueness! """, 'magenta')
-            action = contract.push_action(
-                "addgrade", "[" + str(account_admin) + ", 1, 35]", account_admin)
-            print(action)
-            self.assertTrue(action.error)
-        #
-
+    def removeGrade(self, account, gradekey):
         #
         # Description: Remove Grade as Admin
         # Expectation: Succeed and record removed
         #
             cprint(""" Action contract.push_action("remgrade") """, 'magenta')
             action = contract.push_action(
-                "remgrade", "[" + str(account_admin) + ", 1]", account_admin)
+                "remgrade", "[" + str(account) + ", "+str(gradekey)+"]", account)
             print(action)
             self.assertFalse(action.error)
             t = contract.table("grade", account_deploy)
@@ -125,7 +102,61 @@ class Test1(unittest.TestCase):
             self.assertEqual(t.json["rows"], [])
         #
 
-    def testStudent(self):
+    def removeStudent(self, account, studentkey): 
+        #
+        # Description: Remove Student as Parent
+        # Expectation: Succeed and record removed
+        #
+            cprint(""" Action contract.push_action("remstudent") """, 'magenta')
+            action = contract.push_action(
+                "remstudent", "[" + str(account) + ", "+str(studentkey)+"]", account)
+            print(action)
+            self.assertFalse(action.error)
+            t = contract.table("student", account_deploy)
+            self.assertFalse(t.error)
+            self.assertEqual(t.json["rows"], [])
+        #   
+
+    def testSchool(self):
+
+        #
+        # Description: Add School as Admin
+        # Expectation: Succeed and Data exist
+        #
+            cprint(""" Action contract.push_action("addschool") """, 'magenta')
+            action = contract.push_action(
+                "addschool", "[" + str(account_admin) + ", hogwarts]", account_admin)
+            print(action)
+            self.assertFalse(action.error)
+            t = contract.table("school", account_deploy)
+            self.assertFalse(t.error)
+            self.assertEqual(t.json["rows"][0]["name"], 'hogwarts')
+            self.assertEqual(t.json["rows"][0]["status"], 0)
+            self.assertEqual(t.json["rows"][0]["key"], 0)
+        #
+        #
+
+
+            self.removeSchool(account_admin, 0)
+
+    def testGrade(self):
+
+        #
+        # Description: Add School as Admin
+        # Expectation: Succeed and Data exist
+        #
+            cprint(""" Action contract.push_action("addschool") """, 'magenta')
+            action = contract.push_action(
+                "addschool", "[" + str(account_admin) + ", harvard]", account_admin)
+            print(action)
+            self.assertFalse(action.error)
+            t = contract.table("school", account_deploy)
+            self.assertFalse(t.error)
+            self.assertEqual(t.json["rows"][0]["name"], 'harvard')
+            self.assertEqual(t.json["rows"][0]["status"], 0)
+            self.assertEqual(t.json["rows"][0]["key"], 0)
+        #
+        #
 
         #
         # Description: Add Grade as Admin
@@ -133,7 +164,49 @@ class Test1(unittest.TestCase):
         #
             cprint(""" Action contract.push_action("addgrade") """, 'magenta')
             action = contract.push_action(
-                "addgrade", "[" + str(account_admin) + ", 2, 30]", account_admin)
+                "addgrade", "[" + str(account_admin) + ",0, 1, 25]", account_admin)
+            print(action)
+            self.assertFalse(action.error)
+            t = contract.table("grade", account_deploy)
+            self.assertFalse(t.error)
+            self.assertEqual(t.json["rows"][0]["key"], 0)
+            self.assertEqual(t.json["rows"][0]["schoolfk"], 0)
+            self.assertEqual(t.json["rows"][0]["grade_num"], 1)
+            self.assertEqual(t.json["rows"][0]["openings"], 25)
+        #
+        #
+
+
+            self.removeGrade(account_admin, 0)
+            self.removeSchool(account_admin, 0)
+
+    def testStudent(self):
+
+        #
+        # Description: Add School as Admin
+        # Expectation: Succeed and Data exist
+        #
+            cprint(""" Action contract.push_action("addschool") """, 'magenta')
+            action = contract.push_action(
+                "addschool", "[" + str(account_admin) + ", harvard]", account_admin)
+            print(action)
+            self.assertFalse(action.error)
+            t = contract.table("school", account_deploy)
+            self.assertFalse(t.error)
+            self.assertEqual(t.json["rows"][0]["name"], 'harvard')
+            self.assertEqual(t.json["rows"][0]["status"], 0)
+            self.assertEqual(t.json["rows"][0]["key"], 0)
+        #
+        #
+
+        
+        #
+        # Description: Add Grade as Admin
+        # Expectation: Succeed and Data exist
+        #
+            cprint(""" Action contract.push_action("addgrade") """, 'magenta')
+            action = contract.push_action(
+                "addgrade", "[" + str(account_admin) + ", 0, 2, 30]", account_admin)
             print(action)
             self.assertFalse(action.error)
             t = contract.table("grade", account_deploy)
@@ -149,53 +222,20 @@ class Test1(unittest.TestCase):
         #
             cprint(""" Action contract.push_action("addstudent") """, 'yellow')
             action = contract.push_action(
-                "addstudent", '["' + str(account_parent) + '", 123456789, jimmy, stewart, 2]', account_parent)
+                "addstudent", '["' + str(account_parent) + '", 0, 123456789, jimmy, stewart]', account_parent)
             print(action)
             self.assertFalse(action.error)
             t = contract.table("student", account_deploy)
             self.assertFalse(t.error)
-            self.assertEqual(t.json["rows"][0]["grade"], 2)
+            self.assertEqual(t.json["rows"][0]["gradefk"], 0)
             self.assertEqual(t.json["rows"][0]["ssn"], 123456789)
             self.assertEqual(t.json["rows"][0]["firstname"], "jimmy")
             self.assertEqual(t.json["rows"][0]["lastname"], "stewart")
         #
 
-        #
-        # Description: Remove Student as Admin
-        # Expectation: Fail since only owner can remove
-        #
-            cprint(""" Action contract.push_action("remstudent") ***WARNING: This action should fail due to authority mismatch! """, 'magenta')
-            action = contract.push_action(
-                "remstudent", "[" + str(account_admin) + ", 123456789]", account_admin)
-            print(action)
-            self.assertTrue(action.error)
-        # 
-
-        #
-        # Description: Add same student
-        # Expectation: Fail since student must be unique
-        #
-            cprint(""" Action contract.push_action("addstudent") ***WARNING: This action should fail due to uniqueness! """, 'magenta')
-            action = contract.push_action(
-                "addstudent", '["' + str(account_parent) + '", 123456789, jimmy, stewart, 2]', account_parent)
-            print(action)
-            self.assertTrue(action.error)
-        #
-
-
-        #
-        # Description: Remove Student as Parent
-        # Expectation: Succeed and record removed
-        #
-            cprint(""" Action contract.push_action("remstudent") ***WARNING: This action should fail due to authority mismatch! """, 'magenta')
-            action = contract.push_action(
-                "remstudent", "[" + str(account_parent) + ", 123456789]", account_parent)
-            print(action)
-            self.assertFalse(action.error)
-            t = contract.table("student", account_deploy)
-            self.assertFalse(t.error)
-            self.assertEqual(t.json["rows"], [])
-        #    
+            self.removeStudent(account_parent, 0)
+            self.removeGrade(account_admin, 0)
+            self.removeSchool(account_admin, 0)   
 
     def tearDown(self):
         pass
