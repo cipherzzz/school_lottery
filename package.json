@@ -68,13 +68,14 @@
     "redux-thunk": "^2.3.0"
   },
   "scripts": {
-    "start": "node scripts/start.js",
-    "build": "node scripts/build.js",
-    "test": "node scripts/test.js --env=jsdom",
-    "startChain": "./eos/scripts/start_blockchain.sh",
-    "resetChain": "./eos/scripts/resetchain.sh",
-    "unlock": "./eos/scripts/unlock.sh",
-    "accounts": "./eos/scripts/accounts.sh"
+    "dapp:start": "node scripts/start.js",
+    "dapp:build": "node scripts/build.js",
+    "dapp:test": "node scripts/test.js --env=jsdom",
+    "chain:start": "./eos/scripts/start_blockchain.sh",
+    "chain:reset": "./eos/scripts/resetchain.sh",
+    "wallet:unlock": "./eos/scripts/unlock.sh",
+    "contract:build": "cmake .",
+    "contract:test": "ctest"
   },
   "jest": {
     "collectCoverageFrom": [
