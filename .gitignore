@@ -3,3 +3,10 @@
 *.wast
 node_modules
 build_webpack
+cmake_install.cmake
+Testing/
+Makefile
+DartConfiguration.tcl
+CTestTestfile.cmake
+CMakeFiles/
+CMakeCache.txt
