@@ -16,17 +16,34 @@ const initialState = {
     error: undefined
 };
 
-const networkOptions = {
-    protocol:'http',
-    blockchain:'eos',
-    host:'127.0.0.1',
-    port:8888,
-    chainId:'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f'
-  }
+let networkOptions
+let eosOptions
+if(process.env.NODE_ENV === "development") {
+    networkOptions = {
+        protocol:'http',
+        blockchain:'eos',
+        host:'127.0.0.1',
+        port:8888,
+        chainId:'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f'
+      }
 
-const eosOptions = {
-    broadcast: true, 
-    chainId: 'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f'
+    eosOptions = {
+        broadcast: true, 
+        chainId: 'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f'
+    }  
+} else {
+    networkOptions = {
+        protocol: process.env.PROTOCOL,
+        blockchain: 'eos',
+        host: process.env.HOST,
+        port: process.env.PORT,
+        chainId: process.env.CHAINID
+      }
+
+    eosOptions = {
+        broadcast: true, 
+        chainId: process.env.CHAINID
+    }
 }
 
 const SET_SCATTER = "setScatter"
