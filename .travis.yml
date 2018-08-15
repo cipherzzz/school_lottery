@@ -13,9 +13,6 @@ before_script:
 script:
   - npm run build
 
-after_script:
-  - ./stopGanache.sh
-
 deploy:
   provider: heroku
   email: "dev@cipherz.com"
