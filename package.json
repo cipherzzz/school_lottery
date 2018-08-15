@@ -20,8 +20,8 @@
     "chain:start": "./eos/scripts/start_blockchain.sh",
     "chain:reset": "./eos/scripts/resetchain.sh",
     "wallet:unlock": "./eos/scripts/unlock.sh",
-    "contract:build": "cmake .",
-    "contract:test": "ctest"
+    "contract:build": "rm ./src/contracts/Lottery/Lottery.abi && cmake . && make",
+    "contract:test": "ctest -V -R"
   },
   "dependencies": {
     "dotenv": "^2.0.0",
