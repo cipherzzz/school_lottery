@@ -201,15 +201,15 @@ class App extends Component {
         <div>
                 <h1>Trust the System</h1>
                 <p>
-                  This EOS dApp is leveling the playing field for school lottery admissions. 
-                  Hogwarts has received multiple complaints about unfair admission practices to the school of Witchcraft and Wizardry 
-                  and has created this solution.
+                  This EOS dApp is leveling the playing field for school lottery admissions.
                   <br/><br/>
-                  <h3>Roles</h3>
+                  <h3>Usage</h3>
                   <ul>
-                    <li><b>Superintendent</b> - Inputs total openings per grade, runs lottery</li>
-                    <li><b>Parent</b> - Inputs parent/student information</li>
+                    <li><b>Superintendent</b> - Create a school, add grades, and run the lottery</li>
+                    <li><b>Parent</b> - Select a school, grade, and input student information</li>
                   </ul>
+                  You will need the chrome scatter plugin to login: &nbsp;
+                  <a href='https://get-scatter.com/' target='_new'>https://get-scatter.com/</a>
                 </p>
                 </div>
       )
