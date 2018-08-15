@@ -20,3 +20,7 @@ cleos get table lottery.code lottery.code grade
 cleos get table lottery.code lottery.code student
 
 cleos push action admin runlottery '["admin"]' -p admin@active
+
+cleos --url http://dev.cryptolions.io:38888 system buyram eosiocipherz eosiocipherz "1000 EOS"
+cleos --url http://dev.cryptolions.io:38888 set contract eosiocipherz ./contracts/Lottery
+cleos --url http://dev.cryptolions.io:38888 get code eosiocipherz
