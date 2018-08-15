@@ -14,9 +14,9 @@
   },
   "homepage": "https://github.com/cipherzzz/school_lottery#readme",
   "scripts": {
-    "dapp:start": "node scripts/start.js",
-    "dapp:build": "node scripts/build.js",
-    "dapp:test": "node scripts/test.js --env=jsdom",
+    "start": "node scripts/start.js",
+    "build": "node scripts/build.js",
+    "test": "node scripts/test.js --env=jsdom",
     "chain:start": "./eos/scripts/start_blockchain.sh",
     "chain:reset": "./eos/scripts/resetchain.sh",
     "wallet:unlock": "./eos/scripts/unlock.sh",
