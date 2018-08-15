@@ -1,2 +1,2 @@
-eosiocpp -o ./contracts/Lottery/Lottery.wast ./contracts/lottery/Lottery.cpp
-eosiocpp -g ./contracts/Lottery/Lottery.abi ./contracts/lottery/Lottery.cpp
+eosiocpp -o ./src/contracts/Lottery/Lottery.wast ./src/contracts/lottery/Lottery.cpp
+eosiocpp -g ./src/contracts/Lottery/Lottery.abi ./src/contracts/lottery/Lottery.cpp

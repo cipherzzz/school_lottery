@@ -20,7 +20,7 @@ class Test1(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        CONTRACT_NAME = "/Users/markmathis/Projects/EOS/lottery/contracts/Lottery"
+        CONTRACT_NAME = "/Users/markmathis/Projects/EOS/lottery/src/contracts/Lottery"
         testnet = node.reset()
         assert(not testnet.error)
 
