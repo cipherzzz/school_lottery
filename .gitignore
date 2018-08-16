@@ -10,3 +10,4 @@ DartConfiguration.tcl
 CTestTestfile.cmake
 CMakeFiles/
 CMakeCache.txt
+build/
