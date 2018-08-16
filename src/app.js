@@ -149,7 +149,7 @@ class App extends Component {
     if(this.props.userType === -1 || this.props.identity === undefined) {
       return (
         <div>
-          <a href="#" className="pure-menu-heading pure-menu-link">School Lottery</a>
+          <a href="" className="pure-menu-heading pure-menu-link">School Lottery</a>
           <a onClick={this.authenticateParent.bind(this)} style={{float: "right", cursor: "pointer"}} className="pure-menu-heading pure-menu-button">Login as Parent</a>
           <a onClick={this.authenticateSuperintendent.bind(this)} style={{float: "right", cursor: "pointer"}} className="pure-menu-heading pure-menu-button">Login as Admin</a>
         </div>  
@@ -157,7 +157,7 @@ class App extends Component {
     } else {
       return (
         <div>
-          <a href="#" className="pure-menu-heading pure-menu-link">School Lottery</a>
+          <a href="" className="pure-menu-heading pure-menu-link">School Lottery</a>
           <a onClick={this.logout.bind(this)} style={{float: "right", cursor: "pointer"}} className="pure-menu-heading pure-menu-button">Logout</a>
           <div style={{float: "right", color: 'white'}} className="pure-menu-heading pure-menu-button"><i>{this.props.identity.personal.firstname + " " + this.props.identity.personal.lastname}</i></div>
         </div>

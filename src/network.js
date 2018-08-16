@@ -11,15 +11,15 @@ export default class Network {
     }
 
     async init(){
-        this.contract = await this.eos.contract('lottery.code')
+        this.contract = await this.eos.contract('lotteryxcode')
     }
 
     /* Table Data - Begin */
     async getSchools(onlyOwner) {
         const data = await this.eos.getTableRows({
                                 "json": true,
-                                "scope": "lottery.code",
-                                "code": 'lottery.code',
+                                "scope": "lotteryxcode",
+                                "code": 'lotteryxcode',
                                 "table": "school"
                                 })  
                     
@@ -36,8 +36,8 @@ export default class Network {
     async getGrades(school_id) {
         const data = await this.eos.getTableRows({
           "json": true,
-          "scope": 'lottery.code',
-          "code": 'lottery.code',
+          "scope": 'lotteryxcode',
+          "code": 'lotteryxcode',
           "table": "grade",
           "table_key": 'school_key',
           "lower_bound": school_id,
@@ -48,8 +48,8 @@ export default class Network {
       async getStudents(grade_id) {
         const data = await this.eos.getTableRows({
           "json": true,
-          "scope": 'lottery.code',
-          "code": 'lottery.code',
+          "scope": 'lotteryxcode',
+          "code": 'lotteryxcode',
           "table": "student",
           "table_key": 'grade_key',
         })

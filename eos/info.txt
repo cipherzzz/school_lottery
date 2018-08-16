@@ -16,7 +16,7 @@ cleos wallet import 5JvCAb9Xb96uSPpesybugyjJMutQeobVapRczFY74HPaJu1ZLsG -n lotte
 cleos wallet import 5Jvp1JxH5ADue6XVcymEuFtvKX5iQXdubKrxR1peXZd8vRX7sRH -n lottery
 cleos create account eosio eosio.token EOS5Ca35kjLd3E4jcxwcrvqY51C4eTdqPaUvywfFa93XRMenS9VFg EOS5W7FexsygdkVm93qk4EV6kMGEoSVe4Lni3RLHKFQWaFwH9Ke8h
 
--- lottery.code (This is the smart contract account)
+-- lotteryxcode (This is the smart contract account)
 owner key
 Private key: 5J4RemYPpfKg3vUJDTNVNEEudJTEyK9jaHWcMigA6Hq82X5QjWv
 Public key: EOS7dcvn31kx6XNM8Etm2ZEADGhceNtdypk5TXequ6S6C8ezMqZhR
@@ -25,7 +25,7 @@ active key
 Private key: 5HzMHNo92XxE9vHbZ9EeVuXRwosUWGLHXvM1FkdBSiUPT2i9J9E
 Public key: EOS8YU5u7tZhk3jhgYPKK8Sr2GQpLQphk5pmS4zwyNwnZV5ZhLCjh
 
-cleos create account eosio lottery.code EOS7dcvn31kx6XNM8Etm2ZEADGhceNtdypk5TXequ6S6C8ezMqZhR EOS8YU5u7tZhk3jhgYPKK8Sr2GQpLQphk5pmS4zwyNwnZV5ZhLCjh
+cleos create account eosio lotteryxcode EOS7dcvn31kx6XNM8Etm2ZEADGhceNtdypk5TXequ6S6C8ezMqZhR EOS8YU5u7tZhk3jhgYPKK8Sr2GQpLQphk5pmS4zwyNwnZV5ZhLCjh
 
 
 -- admin (This is the admin of the lotter)
@@ -52,70 +52,70 @@ cleos create account eosio parent EOS4uycimfHm5RAojQwBvjPFUtCsgDKBPLoyReGjB661uT
 
 -- Tests --
 
-cleos push action lottery.code addschool '["admin","Barclay Downs"]' -p admin@active 
+cleos push action lotteryxcode addschool '["admin","Barclay Downs"]' -p admin@active 
 
-cleos push action lottery.code remschool '["admin", 0]' -p admin@active 
+cleos push action lotteryxcode remschool '["admin", 0]' -p admin@active 
 
-cleos push action lottery.code updateschool '["admin", 3, "Barclay Downs 2"]' -p admin@active 
+cleos push action lotteryxcode updateschool '["admin", 3, "Barclay Downs 2"]' -p admin@active 
 
-cleos get table lottery.code lottery.code school
+cleos get table lotteryxcode lotteryxcode school
 
-cleos push action lottery.code remgrade '["admin",1]' -p admin@active 
+cleos push action lotteryxcode remgrade '["admin",1]' -p admin@active 
 // Error - Grade does not Exist
 
-cleos push action lottery.code addstudent '["parent",123456789, "jimmy", "stewart", 1]' -p parent@active
+cleos push action lotteryxcode addstudent '["parent",123456789, "jimmy", "stewart", 1]' -p parent@active
 // Error - Student's grade must exist before adding student
 
-cleos push action lottery.code addgrade '["admin",1, 30]' -p admin@active 
+cleos push action lotteryxcode addgrade '["admin",1, 30]' -p admin@active 
 // Success
 
-cleos push action lottery.code remstudent '["parent",123456789]' -p parent@active 
+cleos push action lotteryxcode remstudent '["parent",123456789]' -p parent@active 
 // Error - Student does not Exist
 
-cleos push action lottery.code addstudent '["parent",123456789, "jimmy", "stewart", 1]' -p parent@active
+cleos push action lotteryxcode addstudent '["parent",123456789, "jimmy", "stewart", 1]' -p parent@active
 // Success
 
-cleos push action lottery.code remstudent '["admin",123456789]' -p admin@active 
+cleos push action lotteryxcode remstudent '["admin",123456789]' -p admin@active 
 // Error - Student is only accessible from the account that inserted it
 
-cleos push action lottery.code getstudent '["admin",123456789]' -p admin@active
+cleos push action lotteryxcode getstudent '["admin",123456789]' -p admin@active
 // Error - Student is only accessible from the account that inserted it
 
-cleos push action lottery.code getstudent '["parent",123456789]' -p parent@active
+cleos push action lotteryxcode getstudent '["parent",123456789]' -p parent@active
 // Success
 
-cleos push action lottery.code getstudents '["parent"]' -p parent@active
+cleos push action lotteryxcode getstudents '["parent"]' -p parent@active
 // Success - available to all authorized - strips out private info - Todo lock this down
 
-cleos push action lottery.code getstudents '["admin"]' -p admin@active
+cleos push action lotteryxcode getstudents '["admin"]' -p admin@active
 // Success - available to all authorized - strips out private info - Todo lock this down
 
-cleos push action lottery.code getgrade '["parent",1]' -p parent@active
+cleos push action lotteryxcode getgrade '["parent",1]' -p parent@active
 // Success - available to all authorized
 
-cleos push action lottery.code getgrade '["admin", 1]' -p admin@active
+cleos push action lotteryxcode getgrade '["admin", 1]' -p admin@active
 // Success - available to all authorized
 
-cleos push action lottery.code getgrades '["parent"]' -p parent@active
+cleos push action lotteryxcode getgrades '["parent"]' -p parent@active
 // Success - available to all authorized
 
-cleos push action lottery.code getgrades '["admin"]' -p admin@active
+cleos push action lotteryxcode getgrades '["admin"]' -p admin@active
 // Success - available to all authorized
 
-cleos push action lottery.code runlottery '["admin"]' -p admin@active
+cleos push action lotteryxcode runlottery '["admin"]' -p admin@active
 // Success - available to all authorized - Todo lock this down
 
-cleos push action lottery.code getstudent '["parent",123456789]' -p parent@active
+cleos push action lotteryxcode getstudent '["parent",123456789]' -p parent@active
 // Success - Using FIFO in lieue of random sample - todo use dice example contract for random behaviour
 
-cleos push action lottery.code remstudent '["parent",123456789]' -p parent@active 
+cleos push action lotteryxcode remstudent '["parent",123456789]' -p parent@active 
 // Success
 
-cleos push action lottery.code remgrade '["admin",1]' -p admin@active 
+cleos push action lotteryxcode remgrade '["admin",1]' -p admin@active 
 //Success
 
-cleos push action lottery.code getstudent '["parent",123456789]' -p parent@active
+cleos push action lotteryxcode getstudent '["parent",123456789]' -p parent@active
 // Error - student not found
 
-cleos push action lottery.code getgrade '["admin", 1]' -p admin@active
+cleos push action lotteryxcode getgrade '["admin", 1]' -p admin@active
 // Error - grade not found

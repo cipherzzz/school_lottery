@@ -16,7 +16,7 @@ eos = Eos({
     httpEndpoint:'http://127.0.0.1:8888'
     }) 
 
-eos.contract('lottery.code').then(contract => {
+eos.contract('lotteryxcode').then(contract => {
     const options = { authorization: [ `parent@active` ] };
     contract.getgrades(`parent`, options)
 }).catch(error => console.log(error));    
@@ -78,8 +78,8 @@ eos.contract('lottery.code').then(contract => {
 
 //   eos.getTableRows({
 //     "json": true,
-//     "scope": 'lottery.code',
-//     "code": 'lottery.code',
+//     "scope": 'lotteryxcode',
+//     "code": 'lotteryxcode',
 //     "table": "grade",
 //     "limit": 500
 // }).then(result => {
@@ -89,7 +89,7 @@ eos.contract('lottery.code').then(contract => {
     // eos.getCurrencyBalance();
 
     //eos.getCurrencyBalance('parent', 'eosio');
-    //eos.getCurrencyBalance({code: 'SYS', account: 'lottery.code'})
+    //eos.getCurrencyBalance({code: 'SYS', account: 'lotteryxcode'})
 
 // Run with no arguments to print usage.
 // eos.transfer()

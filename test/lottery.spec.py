@@ -42,7 +42,7 @@ class Test1(unittest.TestCase):
         assert(not account_parent.error)
 
         global account_deploy 
-        account_deploy = eosf.account(account_master, name="lottery.code")
+        account_deploy = eosf.account(account_master, name="lotteryxcode")
         wallet.import_key(account_deploy)
         assert(not account_deploy.error)
 

@@ -16,37 +16,18 @@ const initialState = {
     error: undefined
 };
 
-let networkOptions
-let eosOptions
-if(process.env.NODE_ENV === "development") {
-    networkOptions = {
-        protocol:'http',
-        blockchain:'eos',
-        host:'127.0.0.1',
-        port:8888,
-        chainId:'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f'
-      }
-
-    eosOptions = {
-        broadcast: true, 
-        chainId: 'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f'
-    }  
-} else {
-    networkOptions = {
-        protocol: process.env.PROTOCOL,
+const networkOptions = {
+        protocol: process.env.REACT_APP_PROTOCOL,
         blockchain: 'eos',
-        host: process.env.HOST,
-        port: process.env.PORT,
-        chainId: process.env.CHAINID
+        host: process.env.REACT_APP_HOST,
+        port: process.env.REACT_APP_CHAINPORT,
+        chainId: process.env.REACT_APP_CHAINID
       }
 
-    eosOptions = {
+const eosOptions = {
         broadcast: true, 
-        chainId: process.env.CHAINID
+        chainId: process.env.REACT_APP_CHAINID
     }
-}
-
-console.log(process.env)
 
 const SET_SCATTER = "setScatter"
 const SET_ACCOUNT = "setAccount"
@@ -102,7 +83,7 @@ export function initScatter(scatter) {
     return async (dispatch, getState) => {
         dispatch(setScatter(scatter))
 
-        const eos = scatter.eos( networkOptions, Eos, eosOptions, "http")
+        const eos = scatter.eos( networkOptions, Eos, eosOptions, process.env.REACT_APP_PROTOCOL)
         network = new Network(eos)
         network.init()
     }
@@ -253,8 +234,12 @@ export function getSchools(account) {
         network.getSchools(account)
         .then((schools)=>{dispatch(receiveSchools(schools))})
         .catch((error)=>{
-            const err = JSON.parse(error)
-            dispatch(setError(err.error.what))
+            try {
+                const err = JSON.parse(error)
+                dispatch(setError(err.error.what))
+            } catch(err) {
+                dispatch(setError("Unable to get schools"))
+            }
         })
     };
 }
